@@ -1,0 +1,18 @@
+.swagger-ui .info {
+    margin: 24px 0;
+}
+
+.swagger-ui .scheme-container {
+    background: none;
+    box-shadow: none;
+    padding: 10px 0;
+}
+
+.swagger-ui .json-schema-2020-12-accordion__icon {
+    margin: 0 6px;
+}
+
+.container {
+    padding: unset;
+}
+  
