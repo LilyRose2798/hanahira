@@ -11,5 +11,5 @@ export const fileListSchema = z
   .refine(x => x.reduce((a, x) => a + x.size, 0) < 100 * 1024 * 1024, "Total size of all files must be 100MB or lower")
 
 export const numericStringSchema = z.string().regex(/^d+$/, "Characters other than digits found in string").transform(x => parseInt(x, 10))
-const maxSeconds = 60 * 60 * 24 * (10 ** 11)
-export const timestampSchema = z.number().min(-maxSeconds).max(maxSeconds).openapi({ description: "A unix timestamp", example: 1690000000000 })
+
+export const preprocessEmptyString = <T>(schema: z.ZodType<T>) => z.preprocess(x => (x === "" ? null : x), schema)

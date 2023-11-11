@@ -1,145 +1,26 @@
 import { generateOpenApiDocument } from "@lilyrose2798/trpc-openapi"
+import { cache } from "react"
 import { OpenAPIObject } from "openapi3-ts/oas31"
 import { appRouter } from "@/lib/trpc/routers"
-import { cache } from "react"
+import { openApiUploadPath } from "@/app/api/upload/route"
 
-export const getOpenApiDocument = cache(async (): Promise<OpenAPIObject> => {
-  const doc: OpenAPIObject = generateOpenApiDocument(appRouter, {
-    title: "Hanahira API",
-    description: "The API for Hanahira",
-    version: "0.1.0",
-    openApiVersion: "3.1.0",
-    baseUrl: "https://hanahira.moe/api",
-    tags: ["Auth", "Account", "Users", "Posts", "Docs"],
-    securitySchemes: {
-      "Bearer Authorization": {
-        type: "http",
-        scheme: "Bearer",
-      },
-      "Cookie Authorization": {
-        type: "apiKey",
-        in: "cookie",
-        name: "auth_session",
-      },
+export const getOpenApiDocument = cache(async (): Promise<OpenAPIObject> => generateOpenApiDocument(appRouter, {
+  title: "Hanahira API",
+  description: "The API for Hanahira",
+  version: "0.1.0",
+  openApiVersion: "3.1.0",
+  baseUrl: "https://hanahira.moe/api",
+  tags: ["Auth", "Account", "Users", "Posts", "Docs"],
+  securitySchemes: {
+    "Bearer Authorization": {
+      type: "http",
+      scheme: "Bearer",
     },
-  })
-  if (doc.paths) doc.paths["/upload"] = {
-    post: {
-      summary: "Upload files",
-      description: "Upload files",
-      tags: ["Upload"],
-      security: [{ "Bearer Authorization": [] }, { "Cookie Authorization": [] }],
-      requestBody: {
-        required: true,
-        description: "The files to upload",
-        content: {
-          "multipart/form-data": {
-            schema: {
-              type: "object",
-              description: "The form data containing the files",
-              properties: {
-                files: {
-                  type: "array",
-                  description: "An array of files",
-                  items: {
-                    type: "string",
-                    format: "binary",
-                  },
-                },
-              },
-              required: ["files"],
-            },
-          },
-        },
-      },
-      responses: {
-        200: {
-          description: "Files saved successfully",
-          content: {
-            "application/json": {
-              schema: {
-                title: "File IDs",
-                description: "The IDs of the uploaded files",
-                type: "array",
-                items: {
-                  type: "string",
-                  description: "A file ID",
-                  example: "EGSzbSc08HBB",
-                },
-              },
-            },
-          },
-        },
-        400: {
-          description: "Invalid file data provided",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                title: "Error",
-                description: "The error information",
-                properties: {
-                  message: {
-                    type: "string",
-                    description: "The error message",
-                    example: "Invalid file provided",
-                  },
-                  code: {
-                    type: "string",
-                    description: "The error code",
-                    example: "BAD_REQUEST",
-                  },
-                  issues: {
-                    type: "array",
-                    description: "An array of issues that were responsible for the error",
-                    example: [],
-                    items: {
-                      type: "string",
-                    },
-                  },
-                },
-                required: ["code", "message"],
-                example: { code: "BAD_REQUEST", message: "Invalid file provided", issues: [] },
-              },
-            },
-          },
-        },
-        500: {
-          description: "Unexpected server error",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                title: "Error",
-                description: "The error information",
-                properties: {
-                  message: {
-                    type: "string",
-                    description: "The error message",
-                    example: "Error saving files",
-                  },
-                  code: {
-                    type: "string",
-                    description: "The error code",
-                    example: "INTERNAL_SERVER_ERROR",
-                  },
-                  issues: {
-                    type: "array",
-                    description: "An array of issues that were responsible for the error",
-                    example: [],
-                    items: {
-                      type: "string",
-                    },
-                  },
-                },
-                required: ["code", "message"],
-                example: { code: "INTERNAL_SERVER_ERROR", message: "Unexpected server error", issues: [] },
-              },
-            },
-          },
-        },
-      },
+    "Cookie Authorization": {
+      type: "apiKey",
+      in: "cookie",
+      name: "auth_session",
     },
-  }
-  return doc
-})
+  },
+  paths: openApiUploadPath,
+}))

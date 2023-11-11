@@ -1,4 +1,4 @@
-import { Post, updatePostSchema } from "@/lib/db/schema/posts"
+import { Post, postSchema } from "@/lib/db/schema/posts"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc/client"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
+import { preprocessEmptyString } from "@/lib/db/schema/utils"
 import { z } from "zod"
 
 export const PostForm = ({ post, closeModal }: { post?: Post, closeModal: () => void }) => {
@@ -14,7 +15,10 @@ export const PostForm = ({ post, closeModal }: { post?: Post, closeModal: () => 
   const editing = !!post?.id
   const router = useRouter()
   const utils = trpc.useUtils()
-  const schema = updatePostSchema.partial().omit({ id: true, createdBy: true, createdAt: true })
+  const schema = z.object({
+    description: preprocessEmptyString(postSchema.shape.description),
+    sourceUrl: preprocessEmptyString(postSchema.shape.sourceUrl),
+  })
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {

@@ -37,9 +37,9 @@ export const postSchema = createSelectSchema(posts, postRefine)
 export const postIdSchema = postSchema.pick({ id: true })
 export const createPostSchema = createInsertSchema(posts, postRefine)
   .openapi({ title: "Post", description: "The data to create a new post with" })
-export const replacePostSchema = createPostSchema.required({ id: true })
+export const replacePostSchema = createPostSchema
   .openapi({ title: "Post", description: "The data to replace a post's information with" })
-export const updatePostSchema = createPostSchema.partial().required({ id: true })
+export const updatePostSchema = createPostSchema.required().partial().required({ id: true })
   .openapi({ title: "Post", description: "The data to update a post's information with" })
 
 export type Post = z.infer<typeof postSchema>

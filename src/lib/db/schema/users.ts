@@ -39,7 +39,7 @@ export const createUserSchema = createInsertSchema(users, userRefine)
   .openapi({ title: "User", description: "The data to create a new user with" })
 export const replaceUserSchema = createUserSchema
   .openapi({ title: "User", description: "The data to replace a user's information with" })
-export const updateUserSchema = createUserSchema.partial().required({ id: true })
+export const updateUserSchema = createUserSchema.required().partial().required({ id: true })
   .openapi({ title: "User", description: "The data to update a user's information with" })
 export const passwordSchema = z.string().min(1).max(256)
   .openapi({ description: "The user's password", example: "hunter2" })
