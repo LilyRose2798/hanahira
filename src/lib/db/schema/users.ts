@@ -1,11 +1,11 @@
 import { relations } from "drizzle-orm"
 import { pgTable, text, smallint } from "drizzle-orm/pg-core"
 import { Refine, createInsertSchema, createSelectSchema } from "drizzle-zod"
-import { ZodSchema, z } from "zod"
+import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
-import { Session } from "lucia"
 import { sqlDefault, SQLDefaults } from "@/lib/db/utils"
 import { posts } from "@/lib/db/schema/posts"
+
 extendZodWithOpenApi(z)
 
 export const users = pgTable("user", {
@@ -28,7 +28,7 @@ const userRefine = {
     .openapi({ description: "The user's unique username", example: "oshino_shinobu" }),
   email: ({ email }) => email.email().max(512)
     .openapi({ description: "The user's email address", example: "shinobu@example.com" }),
-  accessLevel: ({ accessLevel }) => accessLevel.min(1).max(100)
+  accessLevel: ({ accessLevel }) => accessLevel.min(0).max(32767)
     .openapi({ description: "The user's access level", example: 10 }),
 } satisfies Refine<typeof users, "select" | "insert">
 
@@ -47,20 +47,6 @@ export const signInSchema = z.object({ username: userSchema.shape.username, pass
   .openapi({ title: "Credentials", description: "The data to sign in to a user account with" })
 export const signUpSchema = z.object({ username: userSchema.shape.username, password: passwordSchema })
   .openapi({ title: "Credentials", description: "The data to sign up for a new user account" })
-export const sessionSchema = z.object({
-  sessionId: z.string().openapi({ description: "The ID of the session", example: "98uc971praxb19vv18jgyzu5cqlaw7wl7jjjbi4a" }),
-  user: z.object({
-    userId: userSchema.shape.id,
-    username: userSchema.shape.username,
-    name: userSchema.shape.name,
-    email: userSchema.shape.email,
-    accessLevel: userSchema.shape.accessLevel,
-  }),
-  activePeriodExpiresAt: z.date().openapi({ description: "The date the session's active period expires at", example: new Date(0) }),
-  idlePeriodExpiresAt: z.date().openapi({ description: "The date the session's idle period expires at", example: new Date(0) }),
-  state: z.enum(["idle", "active"]).openapi({ description: "Whether the state of the session is idle or active", example: "active" }),
-  fresh: z.boolean().openapi({ description: "Whether the session is fresh", example: true }),
-}).openapi({ ref: "Session", title: "Session", description: "The information for a user session" }) satisfies ZodSchema<Session>
 
 export type User = z.infer<typeof userSchema>
 export type UserIdParams = z.infer<typeof userIdSchema>

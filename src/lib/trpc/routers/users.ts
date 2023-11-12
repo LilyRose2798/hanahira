@@ -1,5 +1,5 @@
 import { router as r, procedure as p } from "@/lib/trpc"
-import { withAuth, withAccess, withUserOwnership } from "@/lib/trpc/middleware"
+import { withAuth, withUserOwnership } from "@/lib/trpc/middleware"
 import { userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schema/users"
 import { findUsers, findUserById, createUser, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
 import { z } from "zod"
@@ -22,7 +22,7 @@ export const usersRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .use(withAuth)
+      .use(withAuth())
       .input(z.void())
       .output(userSchema.array())
       .query(async () => findUsers()),
@@ -42,7 +42,7 @@ export const usersRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .use(withAuth)
+      .use(withAuth())
       .input(userIdSchema)
       .output(userSchema)
       .query(async ({ input: user }) => findUserById(user)),
@@ -63,8 +63,7 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth)
-    .use(withAccess(10))
+    .use(withAuth(10))
     .input(createUserSchema.omit({ id: true }))
     .output(userSchema)
     .mutation(async ({ input: user }) => createUser({ ...user, id: generateRandomString(15) })),
@@ -85,7 +84,7 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth)
+    .use(withAuth())
     .input(replaceUserSchema)
     .use(withUserOwnership(10))
     .output(userSchema)
@@ -107,7 +106,7 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth)
+    .use(withAuth())
     .input(updateUserSchema)
     .use(withUserOwnership(10))
     .output(userSchema)
@@ -129,7 +128,7 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth)
+    .use(withAuth())
     .input(userIdSchema)
     .use(withUserOwnership(10))
     .output(userSchema)

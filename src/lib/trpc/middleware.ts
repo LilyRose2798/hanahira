@@ -5,17 +5,11 @@ import { UserIdParams } from "@/lib/db/schema/users"
 import { PostIdParams } from "@/lib/db/schema/posts"
 import { validateAuth } from "@/lib/lucia"
 
-export const withAuth = m()
+export const withAuth = (accessLevel: number = 1) => m()
   .create(async ({ next }) => {
     const session = await validateAuth()
     if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not signed in" })
     return next({ ctx: { session } })
-  })
-
-export const withAccess = (accessLevel: number) => m<{ ctx: { session: Session } }>()
-  .create(async ({ ctx: { session }, next }) => {
-    if (session.user.accessLevel < accessLevel) throw new TRPCError({ code: "FORBIDDEN", message: "Signed in user has insufficient access level" })
-    return next()
   })
 
 export const withUserOwnership = (accessLevelOverride?: number) => m<{ ctx: { session: Session }, input: UserIdParams }>()

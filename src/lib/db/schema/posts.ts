@@ -5,6 +5,7 @@ import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
 import { users } from "@/lib/db/schema/users"
 import { SQLDefaults, sqlDefault } from "@/lib/db/utils"
+
 extendZodWithOpenApi(z)
 
 export const posts = pgTable("post", {
@@ -20,7 +21,7 @@ export const postsRelations = relations(posts, ({ one }) => ({
 }))
 
 const postRefine = {
-  id: ({ id }) => id.min(1).max(Number.MAX_SAFE_INTEGER)
+  id: ({ id }) => id
     .openapi({ description: "The post's ID", example: "jyfW7MDalrr" }),
   description: ({ description }) => description.min(1).max(65536)
     .openapi({ description: "The post's description", example: "A cute picture of Oshino Shinobu lying on a donut pillow." }),
