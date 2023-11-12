@@ -1,5 +1,5 @@
 import { procedure as p } from "@/lib/trpc"
-import { withAuth } from "@/lib/trpc/middleware"
+import { hasAuth } from "@/lib/trpc/middleware"
 import { signInSchema, signUpSchema } from "@/lib/db/schema/users"
 import { sessionSchema } from "@/lib/db/schema/sessions"
 import { signIn, signUp, signOut } from "@/lib/api/auth"
@@ -53,7 +53,7 @@ export const authProcedures = {
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(z.void())
     .output(sessionSchema)
     .mutation(async ({ ctx: { session } }) => signOut(session)),

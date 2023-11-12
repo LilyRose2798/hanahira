@@ -1,5 +1,5 @@
 import { router as r, procedure as p } from "@/lib/trpc"
-import { withAuth, withUserOwnership } from "@/lib/trpc/middleware"
+import { hasAuth, ownsUser } from "@/lib/trpc/middleware"
 import { userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schema/users"
 import { findUsers, findUserById, createUser, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
 import { z } from "zod"
@@ -22,7 +22,7 @@ export const usersRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .use(withAuth())
+      .use(hasAuth())
       .input(z.void())
       .output(userSchema.array())
       .query(async () => findUsers()),
@@ -42,7 +42,7 @@ export const usersRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .use(withAuth())
+      .use(hasAuth())
       .input(userIdSchema)
       .output(userSchema)
       .query(async ({ input: user }) => findUserById(user)),
@@ -63,7 +63,7 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth(10))
+    .use(hasAuth(10))
     .input(createUserSchema.omit({ id: true }))
     .output(userSchema)
     .mutation(async ({ input: user }) => createUser({ ...user, id: generateRandomString(15) })),
@@ -84,9 +84,9 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(replaceUserSchema)
-    .use(withUserOwnership(10))
+    .use(ownsUser(10))
     .output(userSchema)
     .mutation(async ({ input: user }) => replaceUser(user).then(invalidateAuthAndReturn)),
   update: p
@@ -106,9 +106,9 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(updateUserSchema)
-    .use(withUserOwnership(10))
+    .use(ownsUser(10))
     .output(userSchema)
     .mutation(async ({ input: user }) => updateUser(user).then(invalidateAuthAndReturn)),
   delete: p
@@ -128,9 +128,9 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(userIdSchema)
-    .use(withUserOwnership(10))
+    .use(ownsUser(10))
     .output(userSchema)
     .mutation(async ({ input: user }) => deleteUser(user).then(invalidateAuthAndReturn)),
 })

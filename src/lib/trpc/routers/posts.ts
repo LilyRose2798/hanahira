@@ -1,5 +1,5 @@
 import { router as r, procedure as p } from "@/lib/trpc"
-import { withAuth, withPostOwnership } from "@/lib/trpc/middleware"
+import { hasAuth, ownsPost } from "@/lib/trpc/middleware"
 import { nanoid } from "@/lib/db"
 import { postIdSchema, createPostSchema, replacePostSchema, updatePostSchema, postSchema } from "@/lib/db/schema/posts"
 import { findPosts, findPostById, createPost, replacePost, updatePost, deletePost } from "@/lib/api/posts"
@@ -55,7 +55,7 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(createPostSchema.omit({ id: true, createdBy: true, createdAt: true }))
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
@@ -77,9 +77,9 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(replacePostSchema.omit({ createdBy: true, createdAt: true }))
-    .use(withPostOwnership(10))
+    .use(ownsPost(10))
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
       replacePost({ ...post, createdBy }))),
@@ -100,9 +100,9 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(updatePostSchema.omit({ createdBy: true, createdAt: true }))
-    .use(withPostOwnership(10))
+    .use(ownsPost(10))
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
       updatePost({ ...post, createdBy }))),
@@ -123,9 +123,9 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(postIdSchema)
-    .use(withPostOwnership(10))
+    .use(ownsPost(10))
     .output(postSchema)
     .mutation(async ({ input: post }) => deletePost(post)),
 })

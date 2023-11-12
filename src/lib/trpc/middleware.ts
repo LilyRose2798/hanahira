@@ -5,21 +5,22 @@ import { UserIdParams } from "@/lib/db/schema/users"
 import { PostIdParams } from "@/lib/db/schema/posts"
 import { validateAuth } from "@/lib/lucia"
 
-export const withAuth = (accessLevel: number = 1) => m()
+export const hasAuth = (accessLevel: number = 1) => m()
   .create(async ({ next }) => {
     const session = await validateAuth()
     if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not signed in" })
+    if (session.user.accessLevel < accessLevel) throw new TRPCError({ code: "FORBIDDEN", message: "Signed in user has insufficient access level" })
     return next({ ctx: { session } })
   })
 
-export const withUserOwnership = (accessLevelOverride?: number) => m<{ ctx: { session: Session }, input: UserIdParams }>()
+export const ownsUser = (accessLevelOverride?: number) => m<{ ctx: { session: Session }, input: UserIdParams }>()
   .create(async ({ ctx: { session }, input: { id }, next }) => {
     if (accessLevelOverride && session.user.accessLevel >= accessLevelOverride) return next()
     if (id !== session.user.userId) throw new TRPCError({ code: "FORBIDDEN", message: "Signed in user does not own user with specified ID and does not have required access level to override operation" })
     return next()
   })
 
-export const withPostOwnership = (accessLevelOverride?: number) => m<{ ctx: { session: Session }, input: PostIdParams }>()
+export const ownsPost = (accessLevelOverride?: number) => m<{ ctx: { session: Session }, input: PostIdParams }>()
   .create(async ({ ctx: { session }, input: { id }, next }) => {
     const post = await findPostById({ id })
     const opts = { ctx: { session, post } }

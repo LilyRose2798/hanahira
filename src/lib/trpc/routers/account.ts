@@ -1,5 +1,5 @@
 import { router as r, procedure as p } from "@/lib/trpc"
-import { withAuth } from "@/lib/trpc/middleware"
+import { hasAuth } from "@/lib/trpc/middleware"
 import { replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schema/users"
 import { findUserById, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
 import { z } from "zod"
@@ -21,7 +21,7 @@ export const accountRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(z.void())
     .output(userSchema)
     .query(async ({ ctx: { session: { user: { userId: id } } } }) => findUserById({ id })),
@@ -41,7 +41,7 @@ export const accountRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(replaceUserSchema.omit({ id: true }))
     .output(userSchema)
     .mutation(async ({ input: user, ctx: { session: { user: { userId: id } } } }) => (
@@ -62,7 +62,7 @@ export const accountRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(updateUserSchema.omit({ id: true }))
     .output(userSchema)
     .mutation(async ({ input: user, ctx: { session: { user: { userId: id } } } }) => (
@@ -82,7 +82,7 @@ export const accountRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(withAuth())
+    .use(hasAuth())
     .input(z.void())
     .output(userSchema)
     .mutation(async ({ ctx: { session: { user: { userId: id } } } }) => (
