@@ -4,6 +4,7 @@ import { userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, us
 import { findUsers, findUserById, createUser, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
 import { z } from "zod"
 import { invalidateAuthAndReturn } from "@/lib/lucia"
+import { generateRandomString } from "lucia/utils"
 
 export const usersRouter = r({
   query: r({
@@ -64,9 +65,9 @@ export const usersRouter = r({
     } })
     .use(withAuth)
     .use(withAccess(10))
-    .input(createUserSchema)
+    .input(createUserSchema.omit({ id: true }))
     .output(userSchema)
-    .mutation(async ({ input: user }) => createUser(user)),
+    .mutation(async ({ input: user }) => createUser({ ...user, id: generateRandomString(15) })),
   replace: p
     .meta({ openapi: {
       method: "PUT",
