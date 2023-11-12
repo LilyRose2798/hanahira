@@ -21,7 +21,7 @@ export const accountRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth())
+    .use(hasAuth)
     .input(z.void())
     .output(userSchema)
     .query(async ({ ctx: { session: { user: { userId: id } } } }) => findUserById({ id })),
@@ -41,7 +41,7 @@ export const accountRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth())
+    .use(hasAuth)
     .input(replaceUserSchema.omit({ id: true }))
     .output(userSchema)
     .mutation(async ({ input: user, ctx: { session: { user: { userId: id } } } }) => (
@@ -62,7 +62,7 @@ export const accountRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth())
+    .use(hasAuth)
     .input(updateUserSchema.omit({ id: true }))
     .output(userSchema)
     .mutation(async ({ input: user, ctx: { session: { user: { userId: id } } } }) => (
@@ -82,7 +82,7 @@ export const accountRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth())
+    .use(hasAuth)
     .input(z.void())
     .output(userSchema)
     .mutation(async ({ ctx: { session: { user: { userId: id } } } }) => (

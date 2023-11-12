@@ -53,7 +53,7 @@ export const authProcedures = {
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth())
+    .use(hasAuth)
     .input(z.void())
     .output(sessionSchema)
     .mutation(async ({ ctx: { session } }) => signOut(session)),

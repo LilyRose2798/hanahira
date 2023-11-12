@@ -2,11 +2,6 @@
 /// <reference types="lucia" />
 declare namespace Lucia {
   type Auth = import("@/lib/lucia").Auth
-  type DatabaseUserAttributes = {
-    username: string
-    name: string | null
-    email: string | null
-    access_level: number
-  }
+  type DatabaseUserAttributes = Omit<import("@/lib/db/schema/users").User, "id">
   type DatabaseSessionAttributes = {}
 }

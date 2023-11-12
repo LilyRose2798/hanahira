@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm"
-import { pgTable, text, smallint } from "drizzle-orm/pg-core"
+import { pgTable, text, pgEnum } from "drizzle-orm/pg-core"
 import { Refine, createInsertSchema, createSelectSchema } from "drizzle-zod"
 import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
@@ -8,12 +8,24 @@ import { posts } from "@/lib/db/schema/posts"
 
 extendZodWithOpenApi(z)
 
+export const roles = ["User", "Editor", "Moderator", "Admin"] as const
+export type Role = typeof roles[number]
+export const defaultRole = "User" satisfies Role
+export const roleInherits = {
+  User: [],
+  Editor: ["User"],
+  Moderator: ["Editor"],
+  Admin: ["Moderator"],
+} satisfies { [K in Role]: Role[] }
+export const hasRole = (currentRole: Role, requiredRole: Role): boolean => (
+  currentRole === requiredRole || roleInherits[currentRole].some(role => hasRole(role, requiredRole)))
+
 export const users = pgTable("user", {
   id: text("id").primaryKey(),
   username: text("username").notNull().unique(),
   name: text("name"),
   email: text("email"),
-  accessLevel: smallint("access_level").notNull(),
+  role: pgEnum("user_role", roles)("role").notNull().default(defaultRole),
 })
 
 export const usersRelations = relations(users, ({ many }) => ({ posts: many(posts) }))
@@ -28,8 +40,8 @@ const userRefine = {
     .openapi({ description: "The user's unique username", example: "oshino_shinobu" }),
   email: ({ email }) => email.email().max(512)
     .openapi({ description: "The user's email address", example: "shinobu@example.com" }),
-  accessLevel: ({ accessLevel }) => accessLevel.min(0).max(32767)
-    .openapi({ description: "The user's access level", example: 10 }),
+  role: ({ role }) => role
+    .openapi({ description: "The user's role", example: defaultRole }),
 } satisfies Refine<typeof users, "select" | "insert">
 
 export const userSchema = createSelectSchema(users, userRefine)
@@ -60,4 +72,5 @@ export type SignUpParams = z.infer<typeof signUpSchema>
 export const userDefaults = {
   name: sqlDefault,
   email: sqlDefault,
+  role: sqlDefault,
 } satisfies SQLDefaults<ReplaceUserParams>

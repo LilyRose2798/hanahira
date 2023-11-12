@@ -55,7 +55,7 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth())
+    .use(hasAuth)
     .input(createPostSchema.omit({ id: true, createdBy: true, createdAt: true }))
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
@@ -77,9 +77,9 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth())
+    .use(hasAuth)
     .input(replacePostSchema.omit({ createdBy: true, createdAt: true }))
-    .use(ownsPost(10))
+    .use(ownsPost)
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
       replacePost({ ...post, createdBy }))),
@@ -100,9 +100,9 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth())
+    .use(hasAuth)
     .input(updatePostSchema.omit({ createdBy: true, createdAt: true }))
-    .use(ownsPost(10))
+    .use(ownsPost)
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
       updatePost({ ...post, createdBy }))),
@@ -123,9 +123,9 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth())
+    .use(hasAuth)
     .input(postIdSchema)
-    .use(ownsPost(10))
+    .use(ownsPost)
     .output(postSchema)
     .mutation(async ({ input: post }) => deletePost(post)),
 })

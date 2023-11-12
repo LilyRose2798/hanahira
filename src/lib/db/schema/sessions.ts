@@ -20,7 +20,7 @@ export const sessionSchema = z.object({
     username: userSchema.shape.username,
     name: userSchema.shape.name,
     email: userSchema.shape.email,
-    accessLevel: userSchema.shape.accessLevel,
+    role: userSchema.shape.role,
   }).openapi({ description: "The data of the user the session belongs to" }),
   activePeriodExpiresAt: z.date().openapi({ description: "The date the session's active period expires at", example: new Date(0) }),
   idlePeriodExpiresAt: z.date().openapi({ description: "The date the session's idle period expires at", example: new Date(0) }),

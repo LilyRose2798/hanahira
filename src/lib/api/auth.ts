@@ -1,6 +1,6 @@
 import { auth, createSession, setSession } from "@/lib/lucia"
 import { Session } from "lucia"
-import { SignInParams, SignUpParams } from "@/lib/db/schema/users"
+import { SignInParams, SignUpParams, defaultRole } from "@/lib/db/schema/users"
 import { TRPCError } from "@trpc/server"
 import * as p from "postgres"
 
@@ -21,7 +21,7 @@ export const signUp = async ({ username, password }: SignUpParams) => {
     const { userId } = await auth.createUser({
       key: { providerId: "username", providerUserId: username.toLowerCase(), password },
       // eslint-disable-next-line camelcase
-      attributes: { username, name: null, email: null, access_level: 1 },
+      attributes: { username, name: null, email: null, role: defaultRole },
     })
     const session = await createSession(userId)
     setSession(session)
