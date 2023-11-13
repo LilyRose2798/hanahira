@@ -67,7 +67,7 @@
     "no-else-return": "error",
     "no-dupe-else-if": "error",
     "no-delete-var": "error",
-    "spaced-comment": "error",
+    "spaced-comment": ["error", "always", { "markers": ["/"] }],
     "indent": ["error", 2],
     "keyword-spacing": "error",
     "space-infix-ops": "error",

@@ -1,4 +1,3 @@
-// eslint-disable-next-line spaced-comment
 /// <reference types="lucia" />
 declare namespace Lucia {
   type Auth = import("@/lib/lucia").Auth
