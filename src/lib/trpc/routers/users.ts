@@ -4,7 +4,8 @@ import { userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, us
 import { findUsers, findUserById, createUser, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
 import { z } from "zod"
 import { invalidateAuthAndReturn } from "@/lib/lucia"
-import { generateRandomString } from "lucia/utils"
+import { postSchema } from "@/lib/db/schema/posts"
+import { findPostsByCreator } from "@/lib/api/posts"
 
 export const usersRouter = r({
   query: r({
@@ -47,7 +48,23 @@ export const usersRouter = r({
       .use(hasRole("Moderator"))
       .input(userIdSchema)
       .output(userSchema)
-      .query(async ({ input: user }) => findUserById(user)),
+      .query(async ({ input: { id } }) => findUserById({ id })),
+    posts: p
+      .meta({ openapi: {
+        method: "GET",
+        path: "/users/{id}/posts",
+        tags: ["Users", "Posts"],
+        summary: "Query the posts created by a specific user ID",
+        description: "Query the data of the post with the specified ID",
+        successDescription: "Post data successfully returned",
+        errorResponses: {
+          400: "Invalid user ID",
+          500: "Unexpected server error",
+        },
+      } })
+      .input(userIdSchema)
+      .output(postSchema.array())
+      .query(async ({ input: { id } }) => findPostsByCreator({ createdBy: id })),
   }),
   create: p
     .meta({ openapi: {
@@ -67,9 +84,9 @@ export const usersRouter = r({
     } })
     .use(hasAuth)
     .use(hasRole("Moderator"))
-    .input(createUserSchema.omit({ id: true }))
+    .input(createUserSchema)
     .output(userSchema)
-    .mutation(async ({ input: user }) => createUser({ ...user, id: generateRandomString(15) })),
+    .mutation(async ({ input: user }) => createUser(user)),
   replace: p
     .meta({ openapi: {
       method: "PUT",
@@ -135,5 +152,5 @@ export const usersRouter = r({
     .input(userIdSchema)
     .use(ownsUser)
     .output(userSchema)
-    .mutation(async ({ input: user }) => deleteUser(user).then(invalidateAuthAndReturn)),
+    .mutation(async ({ input: { id } }) => deleteUser({ id }).then(invalidateAuthAndReturn)),
 })

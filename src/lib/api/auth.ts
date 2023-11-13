@@ -21,7 +21,7 @@ export const signUp = async ({ username, password }: SignUpParams) => {
     const { userId } = await auth.createUser({
       key: { providerId: "username", providerUserId: username.toLowerCase(), password },
       // eslint-disable-next-line camelcase
-      attributes: { username, name: null, email: null, role: defaultRole },
+      attributes: { username, name: null, email: null, role: defaultRole, createdAt: new Date() },
     })
     const session = await createSession(userId)
     setSession(session)

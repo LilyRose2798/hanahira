@@ -36,15 +36,17 @@ const postRefine = {
 export const postSchema = createSelectSchema(posts, postRefine)
   .openapi({ ref: "Post", title: "Post", description: "The information for a post" })
 export const postIdSchema = postSchema.pick({ id: true })
-export const createPostSchema = createInsertSchema(posts, postRefine)
+const insertSchema = createInsertSchema(posts, postRefine).omit({ createdBy: true, createdAt: true })
+export const createPostSchema = insertSchema.omit({ id: true })
   .openapi({ title: "Post", description: "The data to create a new post with" })
-export const replacePostSchema = createPostSchema
+export const replacePostSchema = insertSchema
   .openapi({ title: "Post", description: "The data to replace a post's information with" })
-export const updatePostSchema = createPostSchema.required().partial().required({ id: true })
+export const updatePostSchema = insertSchema.required().partial().required({ id: true })
   .openapi({ title: "Post", description: "The data to update a post's information with" })
 
 export type Post = z.infer<typeof postSchema>
 export type PostIdParams = z.infer<typeof postIdSchema>
+export type PostCreatedByParams = Pick<Post, "createdBy">
 export type CreatePostParams = z.infer<typeof createPostSchema>
 export type ReplacePostParams = z.infer<typeof replacePostSchema>
 export type UpdatePostParams = z.infer<typeof updatePostSchema>
@@ -52,5 +54,4 @@ export type UpdatePostParams = z.infer<typeof updatePostSchema>
 export const postDefaults = {
   description: sqlDefault,
   sourceUrl: sqlDefault,
-  createdAt: sqlDefault,
 } satisfies SQLDefaults<ReplacePostParams>

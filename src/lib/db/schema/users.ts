@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm"
-import { pgTable, text, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, text, pgEnum, timestamp } from "drizzle-orm/pg-core"
 import { Refine, createInsertSchema, createSelectSchema } from "drizzle-zod"
 import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
@@ -26,6 +26,7 @@ export const users = pgTable("user", {
   name: text("name"),
   email: text("email"),
   role: pgEnum("user_role", roles)("role").notNull().default(defaultRole),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull().defaultNow(),
 })
 
 export const usersRelations = relations(users, ({ many }) => ({ posts: many(posts) }))
@@ -42,16 +43,19 @@ const userRefine = {
     .openapi({ description: "The user's email address", example: "shinobu@example.com" }),
   role: ({ role }) => role
     .openapi({ description: "The user's role", example: defaultRole }),
+  createdAt: ({ createdAt }) => createdAt
+    .openapi({ description: "The date the post was created", example: new Date(0) }),
 } satisfies Refine<typeof users, "select" | "insert">
 
 export const userSchema = createSelectSchema(users, userRefine)
   .openapi({ ref: "User", title: "User", description: "The information for a user" })
 export const userIdSchema = userSchema.pick({ id: true })
-export const createUserSchema = createInsertSchema(users, userRefine)
+const insertSchema = createInsertSchema(users, userRefine)
+export const createUserSchema = insertSchema.omit({ id: true })
   .openapi({ title: "User", description: "The data to create a new user with" })
-export const replaceUserSchema = createUserSchema
+export const replaceUserSchema = insertSchema
   .openapi({ title: "User", description: "The data to replace a user's information with" })
-export const updateUserSchema = createUserSchema.required().partial().required({ id: true })
+export const updateUserSchema = insertSchema.required().partial().required({ id: true })
   .openapi({ title: "User", description: "The data to update a user's information with" })
 export const passwordSchema = z.string().min(1).max(256)
   .openapi({ description: "The user's password", example: "hunter2" })
@@ -73,4 +77,5 @@ export const userDefaults = {
   name: sqlDefault,
   email: sqlDefault,
   role: sqlDefault,
+  createdAt: sqlDefault,
 } satisfies SQLDefaults<ReplaceUserParams>

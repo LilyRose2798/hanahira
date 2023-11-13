@@ -1,12 +1,25 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, ownsPost } from "@/lib/trpc/middleware"
-import { nanoid } from "@/lib/db"
-import { postIdSchema, createPostSchema, replacePostSchema, updatePostSchema, postSchema } from "@/lib/db/schema/posts"
+import { postSchema, postIdSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schema/posts"
 import { findPosts, findPostById, createPost, replacePost, updatePost, deletePost } from "@/lib/api/posts"
-import { z } from "zod"
 
 export const postsRouter = r({
   query: r({
+    // all: p
+    //   .meta({ openapi: {
+    //     method: "GET",
+    //     path: "/posts",
+    //     tags: ["Posts"],
+    //     summary: "Query all post data",
+    //     description: "Query the data of all posts",
+    //     successDescription: "All post data successfully returned",
+    //     errorResponses: {
+    //       500: "Unexpected server error",
+    //     },
+    //   } })
+    //   .input(z.void())
+    //   .output(postSchema.array())
+    //   .query(async () => findPosts()),
     all: p
       .meta({ openapi: {
         method: "GET",
@@ -16,10 +29,11 @@ export const postsRouter = r({
         description: "Query the data of all posts",
         successDescription: "All post data successfully returned",
         errorResponses: {
+          400: "Invalid post data",
           500: "Unexpected server error",
         },
       } })
-      .input(z.void())
+      .input(postSchema.pick({ id: true, createdBy: true, createdAt: true }))
       .output(postSchema.array())
       .query(async () => findPosts()),
     byId: p
@@ -56,10 +70,10 @@ export const postsRouter = r({
       },
     } })
     .use(hasAuth)
-    .input(createPostSchema.omit({ id: true, createdBy: true, createdAt: true }))
+    .input(createPostSchema)
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
-      createPost({ ...post, id: nanoid(), createdBy }))),
+      createPost({ ...post, createdBy }))),
   replace: p
     .meta({ openapi: {
       method: "PUT",
@@ -78,7 +92,7 @@ export const postsRouter = r({
       },
     } })
     .use(hasAuth)
-    .input(replacePostSchema.omit({ createdBy: true, createdAt: true }))
+    .input(replacePostSchema)
     .use(ownsPost)
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
@@ -101,7 +115,7 @@ export const postsRouter = r({
       },
     } })
     .use(hasAuth)
-    .input(updatePostSchema.omit({ createdBy: true, createdAt: true }))
+    .input(updatePostSchema)
     .use(ownsPost)
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
