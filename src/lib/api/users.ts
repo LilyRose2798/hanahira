@@ -5,7 +5,7 @@ import { users, userDefaults, UserIdParams, CreateUserParams, UpdateUserParams, 
 import { parseFound, parseCreated, parseFoundFirst } from "@/lib/api/utils"
 import { generateRandomString } from "lucia/utils"
 
-export const findUsers = ({ page, sort, ...user }: QueryUserParams) => db.query.users
+export const findUsers = ({ page, sort, ...user }: QueryUserParams = {}) => db.query.users
   .findMany({ ...whereConfig(user), ...paginationConfig({ page }), ...sortingConfig(sort) }).execute()
 export const findUserById = ({ id }: UserIdParams) => db.query.users
   .findFirst({ where: (users, { eq }) => eq(users.id, id) }).execute().then(parseFound)

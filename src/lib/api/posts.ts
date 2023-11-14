@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm"
 import { posts, postDefaults, PostIdParams, PostCreatedByParams, CreatePostParams, ReplacePostParams, UpdatePostParams, QueryPostParams } from "@/lib/db/schema/posts"
 import { parseFound, parseCreated, parseFoundFirst } from "@/lib/api/utils"
 
-export const findPosts = ({ page, sort, ...post }: QueryPostParams) => db.query.posts
+export const findPosts = ({ page, sort, ...post }: QueryPostParams = {}) => db.query.posts
   .findMany({ ...whereConfig(post), ...paginationConfig({ page }), ...sortingConfig(sort) }).execute().then(parseFound)
 export const findPostById = ({ id }: PostIdParams) => db.query.posts
   .findFirst({ where: (posts, { eq }) => eq(posts.id, id) }).execute().then(parseFound)
