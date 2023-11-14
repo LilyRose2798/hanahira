@@ -1,15 +1,14 @@
 import { router as r, procedure as p } from "@/lib/trpc"
-import { hasAuth, hasRole, ownsUser } from "@/lib/trpc/middleware"
-import { userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schema/users"
+import { hasAuth, hasRole, canEditUser } from "@/lib/trpc/middleware"
+import { userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, userSchema, queryUserSchema } from "@/lib/db/schema/users"
 import { findUsers, findUserById, createUser, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
-import { z } from "zod"
 import { invalidateAuthAndReturn } from "@/lib/lucia"
 import { postSchema } from "@/lib/db/schema/posts"
 import { findPostsByCreator } from "@/lib/api/posts"
 
 export const usersRouter = r({
   query: r({
-    all: p
+    many: p
       .meta({ openapi: {
         method: "GET",
         path: "/users",
@@ -24,10 +23,10 @@ export const usersRouter = r({
         },
       } })
       .use(hasAuth)
-      .use(hasRole("Moderator"))
-      .input(z.void())
+      .use(hasRole("Site Moderator"))
+      .input(queryUserSchema)
       .output(userSchema.array())
-      .query(async () => findUsers()),
+      .query(async ({ input: user }) => findUsers(user)),
     byId: p
       .meta({ openapi: {
         method: "GET",
@@ -45,7 +44,7 @@ export const usersRouter = r({
         },
       } })
       .use(hasAuth)
-      .use(hasRole("Moderator"))
+      .use(hasRole("Site Moderator"))
       .input(userIdSchema)
       .output(userSchema)
       .query(async ({ input: { id } }) => findUserById({ id })),
@@ -83,7 +82,7 @@ export const usersRouter = r({
       },
     } })
     .use(hasAuth)
-    .use(hasRole("Moderator"))
+    .use(hasRole("Site Moderator"))
     .input(createUserSchema)
     .output(userSchema)
     .mutation(async ({ input: user }) => createUser(user)),
@@ -106,7 +105,7 @@ export const usersRouter = r({
     } })
     .use(hasAuth)
     .input(replaceUserSchema)
-    .use(ownsUser)
+    .use(canEditUser)
     .output(userSchema)
     .mutation(async ({ input: user }) => replaceUser(user).then(invalidateAuthAndReturn)),
   update: p
@@ -128,7 +127,7 @@ export const usersRouter = r({
     } })
     .use(hasAuth)
     .input(updateUserSchema)
-    .use(ownsUser)
+    .use(canEditUser)
     .output(userSchema)
     .mutation(async ({ input: user }) => updateUser(user).then(invalidateAuthAndReturn)),
   delete: p
@@ -150,7 +149,7 @@ export const usersRouter = r({
     } })
     .use(hasAuth)
     .input(userIdSchema)
-    .use(ownsUser)
+    .use(canEditUser)
     .output(userSchema)
     .mutation(async ({ input: { id } }) => deleteUser({ id }).then(invalidateAuthAndReturn)),
 })

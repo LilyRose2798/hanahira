@@ -1,26 +1,12 @@
 import { router as r, procedure as p } from "@/lib/trpc"
-import { hasAuth, ownsPost } from "@/lib/trpc/middleware"
+import { hasAuth, canEditPost } from "@/lib/trpc/middleware"
 import { postSchema, postIdSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schema/posts"
 import { findPosts, findPostById, createPost, replacePost, updatePost, deletePost } from "@/lib/api/posts"
+import { paginationSchema } from "@/lib/db/schema/utils"
 
 export const postsRouter = r({
   query: r({
-    // all: p
-    //   .meta({ openapi: {
-    //     method: "GET",
-    //     path: "/posts",
-    //     tags: ["Posts"],
-    //     summary: "Query all post data",
-    //     description: "Query the data of all posts",
-    //     successDescription: "All post data successfully returned",
-    //     errorResponses: {
-    //       500: "Unexpected server error",
-    //     },
-    //   } })
-    //   .input(z.void())
-    //   .output(postSchema.array())
-    //   .query(async () => findPosts()),
-    all: p
+    many: p
       .meta({ openapi: {
         method: "GET",
         path: "/posts",
@@ -33,9 +19,12 @@ export const postsRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .input(postSchema.pick({ id: true, createdBy: true, createdAt: true }))
+      .input(postSchema
+        .omit({ description: true, sourceUrl: true })
+        .extend(paginationSchema.shape)
+        .partial())
       .output(postSchema.array())
-      .query(async () => findPosts()),
+      .query(async ({ input: post }) => findPosts(post)),
     byId: p
       .meta({ openapi: {
         method: "GET",
@@ -93,7 +82,7 @@ export const postsRouter = r({
     } })
     .use(hasAuth)
     .input(replacePostSchema)
-    .use(ownsPost)
+    .use(canEditPost)
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
       replacePost({ ...post, createdBy }))),
@@ -116,7 +105,7 @@ export const postsRouter = r({
     } })
     .use(hasAuth)
     .input(updatePostSchema)
-    .use(ownsPost)
+    .use(canEditPost)
     .output(postSchema)
     .mutation(async ({ input: post, ctx: { session: { user: { userId: createdBy } } } }) => (
       updatePost({ ...post, createdBy }))),
@@ -139,7 +128,7 @@ export const postsRouter = r({
     } })
     .use(hasAuth)
     .input(postIdSchema)
-    .use(ownsPost)
+    .use(canEditPost)
     .output(postSchema)
     .mutation(async ({ input: post }) => deletePost(post)),
 })

@@ -25,7 +25,7 @@ const EmptyState = () => (
 )
 
 export const PostList = ({ posts, canEdit = true }: { posts: Post[], canEdit?: boolean }) => {
-  const { data } = trpc.posts.query.all.useQuery(undefined, { initialData: posts, refetchOnMount: false })
+  const { data } = trpc.posts.query.many.useQuery({}, { initialData: posts, refetchOnMount: false })
   if (data.length === 0) return <EmptyState />
   return <ul>{data.toReversed().map(post => <Post post={post} canEdit={canEdit} key={post.id} />)}</ul>
 }

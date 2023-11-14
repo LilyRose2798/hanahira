@@ -18,17 +18,17 @@ export const hasRole = (role: Role) => m<{ ctx: { session: Session } }>()
     return next()
   })
 
-export const ownsUser = m<{ ctx: { session: Session }, input: UserIdParams }>()
+export const canEditUser = m<{ ctx: { session: Session }, input: UserIdParams }>()
   .create(async ({ ctx, input: { id }, next }) => {
-    if (_hasRole(ctx.session.user.role, "Moderator")) return next()
+    if (_hasRole(ctx.session.user.role, "Site Moderator")) return next()
     if (id !== ctx.session.user.userId) throw new TRPCError({ code: "FORBIDDEN", message: "Signed in user does not own user with specified ID and does not have required access level to override operation" })
     return next()
   })
 
-export const ownsPost = m<{ ctx: { session: Session }, input: PostIdParams }>()
+export const canEditPost = m<{ ctx: { session: Session }, input: PostIdParams }>()
   .create(async ({ ctx, next, ...opts }) => {
     const post = await findPostById({ id: opts.input.id })
-    if (_hasRole(ctx.session.user.role, "Moderator")) return next({ ...opts, ctx: { ...ctx, post } })
+    if (_hasRole(ctx.session.user.role, "Post Editor")) return next({ ...opts, ctx: { ...ctx, post } })
     if (post.createdBy !== ctx.session.user.userId) throw new TRPCError({ code: "FORBIDDEN", message: "Signed in user does not own post with specified ID and does not have required access level to override operation" })
     return next({ ...opts, ctx: { ...ctx, post } })
   })

@@ -14,3 +14,13 @@ export const fileListSchema = z
 export const numericStringSchema = z.string().regex(/^d+$/, "Characters other than digits found in string").transform(x => parseInt(x, 10))
 
 export const preprocessEmptyString = <T>(schema: z.ZodType<T>) => z.preprocess(x => (x === "" ? null : x), schema)
+
+export const paginationSchema = z.object({
+  page: z.number().int().min(1).openapi({ description: "The page number", example: 1 }).optional(),
+})
+export type PaginationParams = z.infer<typeof paginationSchema>
+
+export const sortingSchema = z.object({
+  sort: z.string().openapi({ description: "The field to sort by", example: "id" }).optional(),
+})
+export type SortingParams = z.infer<typeof sortingSchema>

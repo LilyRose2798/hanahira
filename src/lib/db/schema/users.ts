@@ -5,20 +5,15 @@ import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
 import { sqlDefault, SQLDefaults } from "@/lib/db/utils"
 import { posts } from "@/lib/db/schema/posts"
+import { paginationSchema, sortingSchema } from "@/lib/db/schema/utils"
 
 extendZodWithOpenApi(z)
 
-export const roles = ["User", "Editor", "Moderator", "Admin"] as const
+export const roles = ["User", "Tag Editor", "Post Editor", "Content Moderator", "Site Moderator", "Admin"] as const
 export type Role = typeof roles[number]
 export const defaultRole = "User" satisfies Role
-export const roleInherits = {
-  User: [],
-  Editor: ["User"],
-  Moderator: ["Editor"],
-  Admin: ["Moderator"],
-} satisfies { [K in Role]: Role[] }
 export const hasRole = (currentRole: Role, requiredRole: Role): boolean => (
-  currentRole === requiredRole || roleInherits[currentRole].some(role => hasRole(role, requiredRole)))
+  currentRole === requiredRole || roles.indexOf(requiredRole) <= roles.indexOf(currentRole))
 
 export const users = pgTable("user", {
   id: text("id").primaryKey(),
@@ -50,6 +45,12 @@ const userRefine = {
 export const userSchema = createSelectSchema(users, userRefine)
   .openapi({ ref: "User", title: "User", description: "The information for a user" })
 export const userIdSchema = userSchema.pick({ id: true })
+export const queryUserSchema = userSchema.extend({
+  name: userSchema.shape.name.unwrap(),
+  email: userSchema.shape.email.unwrap(),
+  ...paginationSchema.shape,
+  ...sortingSchema.shape,
+}).partial().openapi({ title: "User", description: "The data to query users with" })
 const insertSchema = createInsertSchema(users, userRefine)
 export const createUserSchema = insertSchema.omit({ id: true })
   .openapi({ title: "User", description: "The data to create a new user with" })
@@ -66,6 +67,7 @@ export const signUpSchema = z.object({ username: userSchema.shape.username, pass
 
 export type User = z.infer<typeof userSchema>
 export type UserIdParams = z.infer<typeof userIdSchema>
+export type QueryUserParams = z.infer<typeof queryUserSchema>
 export type CreateUserParams = z.infer<typeof createUserSchema>
 export type ReplaceUserParams = z.infer<typeof replaceUserSchema>
 export type UpdateUserParams = z.infer<typeof updateUserSchema>

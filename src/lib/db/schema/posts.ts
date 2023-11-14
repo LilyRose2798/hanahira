@@ -5,6 +5,7 @@ import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
 import { users } from "@/lib/db/schema/users"
 import { SQLDefaults, sqlDefault } from "@/lib/db/utils"
+import { paginationSchema, sortingSchema } from "@/lib/db/schema/utils"
 
 extendZodWithOpenApi(z)
 
@@ -36,6 +37,12 @@ const postRefine = {
 export const postSchema = createSelectSchema(posts, postRefine)
   .openapi({ ref: "Post", title: "Post", description: "The information for a post" })
 export const postIdSchema = postSchema.pick({ id: true })
+export const queryPostSchema = postSchema.extend({
+  description: postSchema.shape.description.unwrap(),
+  sourceUrl: postSchema.shape.sourceUrl.unwrap(),
+  ...paginationSchema.shape,
+  ...sortingSchema.shape,
+}).partial().openapi({ title: "Post", description: "The data to query posts with" })
 const insertSchema = createInsertSchema(posts, postRefine).omit({ createdBy: true, createdAt: true })
 export const createPostSchema = insertSchema.omit({ id: true })
   .openapi({ title: "Post", description: "The data to create a new post with" })
@@ -47,6 +54,7 @@ export const updatePostSchema = insertSchema.required().partial().required({ id:
 export type Post = z.infer<typeof postSchema>
 export type PostIdParams = z.infer<typeof postIdSchema>
 export type PostCreatedByParams = Pick<Post, "createdBy">
+export type QueryPostParams = z.infer<typeof queryPostSchema>
 export type CreatePostParams = z.infer<typeof createPostSchema>
 export type ReplacePostParams = z.infer<typeof replacePostSchema>
 export type UpdatePostParams = z.infer<typeof updatePostSchema>

@@ -1,14 +1,15 @@
 import { db, nanoid } from "@/lib/db"
+import { whereConfig, paginationConfig, sortingConfig } from "@/lib/db/utils"
 import { eq } from "drizzle-orm"
-import { posts, postDefaults, PostIdParams, PostCreatedByParams, CreatePostParams, ReplacePostParams, UpdatePostParams } from "@/lib/db/schema/posts"
+import { posts, postDefaults, PostIdParams, PostCreatedByParams, CreatePostParams, ReplacePostParams, UpdatePostParams, QueryPostParams } from "@/lib/db/schema/posts"
 import { parseFound, parseCreated, parseFoundFirst } from "@/lib/api/utils"
 
-const findPostsP = db.query.posts.findMany().prepare("find_posts")
-export const findPosts = () => findPostsP.execute()
-const findPostByIdP = db.query.posts.findFirst({ where: (posts, { eq, sql }) => eq(posts.id, sql.placeholder("id")) }).prepare("find_post_by_id")
-export const findPostById = ({ id }: PostIdParams) => findPostByIdP.execute({ id }).then(parseFound)
-const findPostsByCreatorP = db.query.posts.findMany({ where: (posts, { eq, sql }) => eq(posts.createdBy, sql.placeholder("createdBy")) }).prepare("find_posts_by_creator")
-export const findPostsByCreator = ({ createdBy }: PostCreatedByParams) => findPostsByCreatorP.execute({ createdBy }).then(parseFound)
+export const findPosts = ({ page, sort, ...post }: QueryPostParams) => db.query.posts
+  .findMany({ ...whereConfig(post), ...paginationConfig({ page }), ...sortingConfig(sort) }).execute().then(parseFound)
+export const findPostById = ({ id }: PostIdParams) => db.query.posts
+  .findFirst({ where: (posts, { eq }) => eq(posts.id, id) }).execute().then(parseFound)
+export const findPostsByCreator = ({ createdBy }: PostCreatedByParams) => db.query.posts
+  .findMany({ where: (posts, { eq }) => eq(posts.createdBy, createdBy) }).execute().then(parseFound)
 export const createPost = (post: CreatePostParams & PostCreatedByParams) => db.insert(posts)
   .values({ ...post, id: nanoid() }).returning().execute().then(parseCreated)
 export const replacePost = ({ id, ...post }: ReplacePostParams & PostCreatedByParams) => db.update(posts)
