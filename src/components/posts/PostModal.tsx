@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { PostForm } from "@/components/posts/PostForm"
-import { Post } from "@/lib/db/schema/posts"
+import { Post } from "@/lib/db/schemas/posts"
 
 export const PostModal = ({ post, emptyState }: {
   post?: Post

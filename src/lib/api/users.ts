@@ -1,7 +1,8 @@
 import { db } from "@/lib/db"
 import { whereConfig, paginationConfig, sortingConfig } from "@/lib/db/utils"
 import { eq } from "drizzle-orm"
-import { users, userDefaults, UserIdParams, CreateUserParams, UpdateUserParams, QueryUserParams } from "@/lib/db/schema/users"
+import { userDefaults, UserIdParams, CreateUserParams, UpdateUserParams, QueryUserParams } from "@/lib/db/schemas/users"
+import { users } from "@/lib/db/tables/users"
 import { parseFound, parseCreated, parseFoundFirst } from "@/lib/api/utils"
 import { generateRandomString } from "lucia/utils"
 

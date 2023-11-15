@@ -3,9 +3,9 @@
 const nextConfig = {}
 
 module.exports = (
-  process.env.NODE_ENV === "development" ?
+  process.env.ANALYZE === "true" ?
     x => require("@next/bundle-analyzer")({
-      enabled: process.env.ANALYZE === "true",
+      enabled: true,
     })(x) :
     x => x
 )(nextConfig)

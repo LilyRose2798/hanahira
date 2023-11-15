@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { useMutation } from "@tanstack/react-query"
 import { z } from "zod"
-import { fileListSchema } from "@/lib/db/schema/utils"
+import { fileListSchema } from "@/lib/db/schemas/utils"
 
 export const UploadForm = ({ uploadComplete }: { uploadComplete: (fileIds: string[]) => void }) => {
   const { toast, onError } = useToast()

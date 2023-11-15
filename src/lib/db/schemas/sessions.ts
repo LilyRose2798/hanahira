@@ -1,17 +1,9 @@
-import { pgTable, text, bigint } from "drizzle-orm/pg-core"
-import { users, userSchema } from "@/lib/db/schema/users"
+import { userSchema } from "@/lib/db/schemas/users"
 import { Session } from "lucia"
 import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
 
 extendZodWithOpenApi(z)
-
-export const sessions = pgTable("user_session", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id),
-  activeExpires: bigint("active_expires", { mode: "number" }).notNull(),
-  idleExpires: bigint("idle_expires", { mode: "number" }).notNull(),
-})
 
 export const sessionSchema = z.object({
   sessionId: z.string().openapi({ description: "The ID of the session", example: "98uc971praxb19vv18jgyzu5cqlaw7wl7jjjbi4a" }),

@@ -1,6 +1,6 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth } from "@/lib/trpc/middleware"
-import { replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schema/users"
+import { replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schemas/users"
 import { findUserById, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
 import { z } from "zod"
 import { invalidateAuthAndReturn } from "@/lib/lucia"

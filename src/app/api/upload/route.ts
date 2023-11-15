@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { writeFile } from "fs/promises"
 import { cwd } from "process"
 import { join } from "path"
-import { nanoid } from "@/lib/db"
-import { fileListSchema } from "@/lib/db/schema/utils"
+import { nanoid } from "@/lib/db/nanoid"
+import { fileListSchema } from "@/lib/db/schemas/utils"
 
 export const POST = async (req: NextRequest) => {
   try {

@@ -1,0 +1,12 @@
+import { pgTable, text } from "drizzle-orm/pg-core"
+import { metaColumns, metaRelations } from "@/lib/db/tables/utils"
+
+export const posts = pgTable("post", {
+  id: text("id").primaryKey().default(""),
+  description: text("description"),
+  sourceUrl: text("source_url"),
+  ...metaColumns,
+})
+export type PostsTable = typeof posts
+
+export const postRelations = metaRelations(posts)

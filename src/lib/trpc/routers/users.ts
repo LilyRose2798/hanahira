@@ -1,9 +1,9 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, hasRole, canEditUser } from "@/lib/trpc/middleware"
-import { userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, userSchema, queryUserSchema } from "@/lib/db/schema/users"
-import { findUsers, findUserById, createUser, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
 import { invalidateAuthAndReturn } from "@/lib/lucia"
-import { postSchema } from "@/lib/db/schema/posts"
+import { userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, userSchema, queryUserSchema } from "@/lib/db/schemas/users"
+import { postSchema } from "@/lib/db/schemas/posts"
+import { findUsers, findUserById, createUser, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
 import { findPostsByCreator } from "@/lib/api/posts"
 
 export const usersRouter = r({
@@ -23,7 +23,7 @@ export const usersRouter = r({
         },
       } })
       .use(hasAuth)
-      .use(hasRole("Site Moderator"))
+      .use(hasRole("SITE_MODERATOR"))
       .input(queryUserSchema)
       .output(userSchema.array())
       .query(async ({ input: user }) => findUsers(user)),
@@ -44,7 +44,7 @@ export const usersRouter = r({
         },
       } })
       .use(hasAuth)
-      .use(hasRole("Site Moderator"))
+      .use(hasRole("SITE_MODERATOR"))
       .input(userIdSchema)
       .output(userSchema)
       .query(async ({ input: { id } }) => findUserById({ id })),
@@ -82,7 +82,7 @@ export const usersRouter = r({
       },
     } })
     .use(hasAuth)
-    .use(hasRole("Site Moderator"))
+    .use(hasRole("SITE_MODERATOR"))
     .input(createUserSchema)
     .output(userSchema)
     .mutation(async ({ input: user }) => createUser(user)),

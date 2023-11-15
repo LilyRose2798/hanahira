@@ -1,8 +1,8 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, canEditPost } from "@/lib/trpc/middleware"
-import { postSchema, postIdSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schema/posts"
 import { findPosts, findPostById, createPost, replacePost, updatePost, deletePost } from "@/lib/api/posts"
-import { paginationSchema } from "@/lib/db/schema/utils"
+import { postSchema, postIdSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schemas/posts"
+import { paginationSchema } from "@/lib/db/schemas/utils"
 
 export const postsRouter = r({
   query: r({

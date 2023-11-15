@@ -1,7 +1,7 @@
 import { procedure as p } from "@/lib/trpc"
 import { hasAuth } from "@/lib/trpc/middleware"
-import { signInSchema, signUpSchema } from "@/lib/db/schema/users"
-import { sessionSchema } from "@/lib/db/schema/sessions"
+import { signInSchema, signUpSchema } from "@/lib/db/schemas/users"
+import { sessionSchema } from "@/lib/db/schemas/sessions"
 import { signIn, signUp, signOut } from "@/lib/api/auth"
 import { z } from "zod"
 

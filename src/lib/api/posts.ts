@@ -1,8 +1,10 @@
-import { db, nanoid } from "@/lib/db"
+import { db } from "@/lib/db"
 import { whereConfig, paginationConfig, sortingConfig } from "@/lib/db/utils"
 import { eq } from "drizzle-orm"
-import { posts, postDefaults, PostIdParams, PostCreatedByParams, CreatePostParams, ReplacePostParams, UpdatePostParams, QueryPostParams } from "@/lib/db/schema/posts"
+import { postDefaults, PostIdParams, PostCreatedByParams, CreatePostParams, ReplacePostParams, UpdatePostParams, QueryPostParams } from "@/lib/db/schemas/posts"
+import { posts } from "@/lib/db/tables/posts"
 import { parseFound, parseCreated, parseFoundFirst } from "@/lib/api/utils"
+import nanoid from "@/lib/db/nanoid"
 
 export const findPosts = ({ page, sort, ...post }: QueryPostParams = {}) => db.query.posts
   .findMany({ ...whereConfig(post), ...paginationConfig({ page }), ...sortingConfig(sort) }).execute().then(parseFound)
@@ -11,7 +13,7 @@ export const findPostById = ({ id }: PostIdParams) => db.query.posts
 export const findPostsByCreator = ({ createdBy }: PostCreatedByParams) => db.query.posts
   .findMany({ where: (posts, { eq }) => eq(posts.createdBy, createdBy) }).execute().then(parseFound)
 export const createPost = (post: CreatePostParams & PostCreatedByParams) => db.insert(posts)
-  .values({ ...post, id: nanoid() }).returning().execute().then(parseCreated)
+  .values({ ...post, id: nanoid(), modifiedBy: post.createdBy, modifiedAt: new Date() }).returning().execute().then(parseCreated)
 export const replacePost = ({ id, ...post }: ReplacePostParams & PostCreatedByParams) => db.update(posts)
   .set({ ...postDefaults, ...post }).where(eq(posts.id, id)).returning().execute().then(parseFoundFirst)
 export const updatePost = ({ id, ...post }: UpdatePostParams & PostCreatedByParams) => db.update(posts)
