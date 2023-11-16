@@ -2,10 +2,11 @@ import { userSchema } from "@/lib/db/schemas/users"
 import { Session } from "lucia"
 import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
+import { zodModel } from "@/lib/db/schemas/utils"
 
 extendZodWithOpenApi(z)
 
-export const sessionSchema = z.object({
+export const sessionSchema = zodModel<Session>()({
   sessionId: z.string().openapi({ description: "The ID of the session", example: "98uc971praxb19vv18jgyzu5cqlaw7wl7jjjbi4a" }),
   user: z.object({
     userId: userSchema.shape.id,
@@ -18,4 +19,4 @@ export const sessionSchema = z.object({
   idlePeriodExpiresAt: z.date().openapi({ description: "The date the session's idle period expires at", example: new Date(0) }),
   state: z.enum(["idle", "active"]).openapi({ description: "Whether the state of the session is idle or active", example: "active" }),
   fresh: z.boolean().openapi({ description: "Whether the session is fresh", example: true }),
-}).openapi({ ref: "Session", title: "Session", description: "The information for a user session" }) satisfies z.ZodSchema<Session>
+}).openapi({ ref: "Session", title: "Session", description: "The information for a user session" })
