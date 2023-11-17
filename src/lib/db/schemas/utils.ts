@@ -3,7 +3,7 @@ import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
 import { UserMetaColumns, TimestampMetaColumns, MetaColumns, TableWithTimestampMeta, TableWithMeta } from "@/lib/db/tables/utils"
 import { EnhancedOmit, titleCase } from "@/lib/utils"
-import { BuildInsertSchema } from "drizzle-zod"
+import { BuildInsertSchema, BuildSelectSchema } from "drizzle-zod"
 import { SQLDefaults, sqlDefault } from "@/lib/db/utils"
 
 extendZodWithOpenApi(z)
@@ -66,18 +66,17 @@ type Implement<Model> = {
     : z.ZodType<Model[key]>
 }
 
-export const zodModel = <T = never>(name: string) => <Schema extends Implement<T> & { [_ in Exclude<keyof Schema, keyof T>]: never }>(
-  schemaShape: Implement<T>) => z.object(schemaShape).openapi({ ref: titleCase(name), title: titleCase(name), description: `The data for a ${name}` })
+export const zodModel = <T = never>(name: string, schemaShape: Implement<T>) => z.object(schemaShape)
+  .openapi({ ref: titleCase(name), title: titleCase(name), description: `The data for a ${name}` })
 
-export type DefaultMask<T extends Table> = OmitMeta<OmitId<{ [_ in { [K in keyof T["_"]["columns"]]: T["_"]["columns"][K] extends AnyColumn<{ notNull: true, hasDefault: true }> ? K : never }[keyof T["_"]["columns"]]]: true }>>
+type _DefaultMask<T extends Table> = OmitMeta<OmitId<{ [_ in { [K in keyof T["_"]["columns"]]: T["_"]["columns"][K] extends AnyColumn<{ notNull: true, hasDefault: true }> ? K : never }[keyof T["_"]["columns"]]]: true }>>
+export type DefaultMask<T extends Table> = {} extends _DefaultMask<T> ? Record<string, never> : _DefaultMask<T>
 
 type QueryParamsOfSchema<T extends z.ZodRawShape> = z.ZodObject<{ [K in keyof T]: T[K] extends z.ZodNullable<infer U> ? U : T[K] }
   & typeof paginationSchema.shape & typeof sortingSchema.shape>
 
-export const userTableSchemas = <T extends TableWithTimestampMeta = never>(name: string = "user") => <
-  Schema extends Implement<OmitMeta<Model<T>>> & { [_ in Exclude<keyof Schema, keyof OmitMeta<Model<T>>>]: never },
-  Mask extends DefaultMask<T> & { [_ in Exclude<keyof Mask, keyof DefaultMask<T>>]: never }
->(schemaShape: Implement<OmitMeta<Model<T>>>, defaultMask: DefaultMask<T>) => {
+export const userTableSchemas = <T extends TableWithTimestampMeta = never>(
+  name: string, schemaShape: OmitMeta<BuildSelectSchema<T, {}>>, defaultMask: DefaultMask<T>) => {
   const title = titleCase(name)
   const timestampMetaColumns = {
     createdAt: z.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) }),
@@ -101,12 +100,9 @@ export const userTableSchemas = <T extends TableWithTimestampMeta = never>(name:
   return { schema, idSchema, querySchema, createSchema, replaceSchema, updateSchema, defaults }
 }
 
-export const tableSchemas = <T extends TableWithMeta = never>(name: string) => <
-  Schema extends Implement<OmitMeta<Model<T>>> & { [_ in Exclude<keyof Schema, keyof OmitMeta<Model<T>>>]: never },
-  Mask extends DefaultMask<T> & { [_ in Exclude<keyof Mask, keyof DefaultMask<T>>]: never }
->(schemaShape: Implement<OmitMeta<Model<T>>>, defaultMask: DefaultMask<T>) => {
-  const { schema: _schema, idSchema, querySchema: _querySchema, createSchema, replaceSchema, updateSchema, defaults } =
-    userTableSchemas<T>(name)(schemaShape, defaultMask)
+export const tableSchemas = <T extends TableWithMeta = never>(
+  name: string, schemaShape: OmitMeta<BuildSelectSchema<T, {}>>, defaultMask: DefaultMask<T>) => {
+  const { schema: _schema, querySchema: _querySchema, ...rest } = userTableSchemas<T>(name, schemaShape, defaultMask)
   const userMetaColumns = {
     createdBy: z.string().openapi({ description: `The ID of the user the ${name} was created by`, example: "105b7lip5nqptbw" }),
     modifiedBy: z.string().openapi({ description: `The ID of the user the ${name} was last modified by`, example: "105b7lip5nqptbw" }),
@@ -115,5 +111,5 @@ export const tableSchemas = <T extends TableWithMeta = never>(name: string) => <
   const createdBySchema = z.object({ createdBy: userMetaColumns.createdBy })
   const modifiedBySchema = z.object({ modifiedBy: userMetaColumns.modifiedBy })
   const querySchema = z.object({ ..._querySchema.shape, ...z.object(userMetaColumns).partial().shape })
-  return { schema, idSchema, createdBySchema, modifiedBySchema, querySchema, createSchema, replaceSchema, updateSchema, defaults }
+  return { schema, createdBySchema, modifiedBySchema, querySchema, ...rest }
 }

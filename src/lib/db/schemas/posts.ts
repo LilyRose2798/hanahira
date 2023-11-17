@@ -15,11 +15,12 @@ export const {
   replaceSchema: replacePostSchema,
   updateSchema: updatePostSchema,
   defaults: postDefaults,
-} = tableSchemas<PostsTable>("post")({
+} = tableSchemas<PostsTable>("post", {
   id: z.string().openapi({ description: "The post's ID", example: "jyfW7MDalrr" }),
+  test: z.string(),
   description: z.string().min(1).max(65536).openapi({ description: "The post's description", example: "A cute picture of Oshino Shinobu lying on a donut pillow." }).nullable(),
   sourceUrl: z.string().url().openapi({ description: "The post's source URL", example: "https://www.pixiv.net/en/artworks/98552071" }).nullable(),
-}, {})
+}, { test: true })
 
 export type Post = z.infer<typeof postSchema>
 export type PostIdParams = z.infer<typeof postIdSchema>

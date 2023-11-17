@@ -14,7 +14,7 @@ export const {
   replaceSchema: replaceUserSchema,
   updateSchema: updateUserSchema,
   defaults: userDefaults,
-} = userTableSchemas<UsersTable>()({
+} = userTableSchemas<UsersTable>("user", {
   id: z.string().openapi({ description: "The user's ID", example: "105b7lip5nqptbw" }),
   name: z.string().min(1).max(128).nullable().openapi({ description: "The user's display name", example: "Oshino Shinobu" }),
   username: z.string().min(1).max(64).regex(/[a-z0-9_-]+/, "username may only contain lowercase letters, numbers, underscores (_), and dashes (-)")

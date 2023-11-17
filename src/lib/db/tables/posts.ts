@@ -6,6 +6,7 @@ export const posts = pgTable("post", {
   id: text("id").primaryKey().$defaultFn(nanoid),
   description: text("description"),
   sourceUrl: text("source_url"),
+  test: text("asdf").default("").notNull(),
   ...metaColumns,
 })
 export type PostsTable = typeof posts

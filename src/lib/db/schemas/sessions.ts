@@ -6,7 +6,7 @@ import { zodModel } from "@/lib/db/schemas/utils"
 
 extendZodWithOpenApi(z)
 
-export const sessionSchema = zodModel<Session>("session")({
+export const sessionSchema = zodModel<Session>("session", {
   sessionId: z.string().openapi({ description: "The ID of the session", example: "98uc971praxb19vv18jgyzu5cqlaw7wl7jjjbi4a" }),
   user: z.object({
     userId: userSchema.shape.id,
