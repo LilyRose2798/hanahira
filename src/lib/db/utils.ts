@@ -10,7 +10,7 @@ export const paginationConfig = ({ page = 1, pageSize = 50 }: { page?: number, p
 })
 
 export const sortingConfig = <T extends Record<string, unknown>>(sort?: string) => ({
-  orderBy: sort ? (table: Record<keyof T, PgColumn<any>>) => sort.split(",").map(x => table[x]) : undefined,
+  orderBy: sort ? (table: Record<keyof T, PgColumn<any>>) => sort.split(",").filter(x => x in table).map(x => table[x]) : undefined,
 })
 
 export const whereConfig = <T extends Record<string, unknown>>(query: Partial<T>, keys: (keyof T)[] = Object.keys(query)) => ({
