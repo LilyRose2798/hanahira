@@ -105,15 +105,15 @@ export const tableSchemas = <T extends TableWithMeta = never>(name: string) => <
   Schema extends Implement<OmitMeta<Model<T>>> & { [_ in Exclude<keyof Schema, keyof OmitMeta<Model<T>>>]: never },
   Mask extends DefaultMask<T> & { [_ in Exclude<keyof Mask, keyof DefaultMask<T>>]: never }
 >(schemaShape: Implement<OmitMeta<Model<T>>>, defaultMask: DefaultMask<T>) => {
-  const { schema: oldSchema, idSchema, querySchema: oldQuerySchema, createSchema, replaceSchema, updateSchema, defaults } =
+  const { schema: _schema, idSchema, querySchema: _querySchema, createSchema, replaceSchema, updateSchema, defaults } =
     userTableSchemas<T>(name)(schemaShape, defaultMask)
   const userMetaColumns = {
     createdBy: z.string().openapi({ description: `The ID of the user the ${name} was created by`, example: "105b7lip5nqptbw" }),
     modifiedBy: z.string().openapi({ description: `The ID of the user the ${name} was last modified by`, example: "105b7lip5nqptbw" }),
   }
-  const schema = z.object({ ...oldSchema.shape, ...userMetaColumns }).openapi(oldSchema._def.openapi as any)
+  const schema = z.object({ ..._schema.shape, ...userMetaColumns }).openapi(_schema._def.openapi as any)
   const createdBySchema = z.object({ createdBy: userMetaColumns.createdBy })
   const modifiedBySchema = z.object({ modifiedBy: userMetaColumns.modifiedBy })
-  const querySchema = z.object({ ...oldQuerySchema.shape, ...z.object(userMetaColumns).partial().shape })
+  const querySchema = z.object({ ..._querySchema.shape, ...z.object(userMetaColumns).partial().shape })
   return { schema, idSchema, createdBySchema, modifiedBySchema, querySchema, createSchema, replaceSchema, updateSchema, defaults }
 }
