@@ -1,8 +1,7 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, canEditPost } from "@/lib/trpc/middleware"
 import { findPosts, findPostById, createPost, replacePost, updatePost, deletePost } from "@/lib/api/posts"
-import { postSchema, postIdSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schemas/posts"
-import { paginationSchema } from "@/lib/db/schemas/utils"
+import { postSchema, postIdSchema, queryPostSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schemas/posts"
 
 export const postsRouter = r({
   query: r({
@@ -19,10 +18,7 @@ export const postsRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .input(postSchema
-        .omit({ description: true, sourceUrl: true })
-        .extend(paginationSchema.shape)
-        .partial())
+      .input(queryPostSchema)
       .output(postSchema.array())
       .query(async ({ input: post }) => findPosts(post)),
     byId: p

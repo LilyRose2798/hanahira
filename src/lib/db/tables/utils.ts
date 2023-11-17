@@ -20,9 +20,11 @@ export const metaColumns = {
 } satisfies Record<string, PgColumnBuilderBase>
 export type MetaColumns = typeof metaColumns
 
-export const metaRelations = (table: PgTableWithColumns<
-  { name: string, columns: BuildColumns<string, typeof metaColumns, "pg">, schema: any, dialect: any }
->) => relations(table, ({ one }) => ({
+export type TableWithUserMeta = PgTableWithColumns<{ name: string, columns: BuildColumns<string, UserMetaColumns, "pg">, schema: any, dialect: any }>
+export type TableWithTimestampMeta = PgTableWithColumns<{ name: string, columns: BuildColumns<string, TimestampMetaColumns, "pg">, schema: any, dialect: any }>
+export type TableWithMeta = PgTableWithColumns<{ name: string, columns: BuildColumns<string, MetaColumns, "pg">, schema: any, dialect: any }>
+
+export const metaRelations = (table: TableWithUserMeta) => relations(table, ({ one }) => ({
   creator: one(users, { fields: [table.createdBy], references: [users.id] }),
   modifier: one(users, { fields: [table.modifiedBy], references: [users.id] }),
 }))
