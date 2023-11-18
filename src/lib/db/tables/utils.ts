@@ -25,6 +25,6 @@ export type TableWithTimestampMeta = PgTableWithColumns<{ name: string, columns:
 export type TableWithMeta = PgTableWithColumns<{ name: string, columns: BuildColumns<string, MetaColumns, "pg">, schema: any, dialect: any }>
 
 export const metaRelations = (table: TableWithUserMeta) => relations(table, ({ one }) => ({
-  creator: one(users, { fields: [table.createdBy], references: [users.id] }),
-  modifier: one(users, { fields: [table.modifiedBy], references: [users.id] }),
+  creator: one(users, { fields: [table.createdBy], references: [users.id], relationName: "creator" }),
+  modifier: one(users, { fields: [table.modifiedBy], references: [users.id], relationName: "modifier" }),
 }))

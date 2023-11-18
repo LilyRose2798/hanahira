@@ -16,6 +16,6 @@ export const users = pgTable("user", {
 })
 export type UsersTable = typeof users
 
-export const userRelations = relations(users, ({ many }) => ({ posts: many(posts) }))
+export const userRelations = relations(users, ({ many }) => ({ posts: many(posts, { relationName: "creator" }) }))
 
 export const schema = { users }
