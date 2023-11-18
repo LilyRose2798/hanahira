@@ -9,7 +9,6 @@ extendZodWithOpenApi(z)
 export const {
   schema: userSchema,
   publicSchema: publicUserSchema,
-  privateSchema: privateUserSchema,
   idSchema: userIdSchema,
   querySchema: queryUserSchema,
   createSchema: createUserSchema,
@@ -27,7 +26,6 @@ export const {
 
 export type User = z.infer<typeof userSchema>
 export type PublicUser = z.infer<typeof publicUserSchema>
-export type PrivateUser = z.infer<typeof privateUserSchema>
 export type UserIdParams = z.infer<typeof userIdSchema>
 export type QueryUserParams = z.infer<typeof queryUserSchema>
 export type CreateUserParams = z.infer<typeof createUserSchema>

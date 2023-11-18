@@ -8,7 +8,6 @@ extendZodWithOpenApi(z)
 export const {
   schema: postSchema,
   publicSchema: publicPostSchema,
-  privateSchema: privatePostSchema,
   idSchema: postIdSchema,
   createdBySchema: postCreatedBySchema,
   modifiedBySchema: postModifiedBySchema,
@@ -25,7 +24,6 @@ export const {
 
 export type Post = z.infer<typeof postSchema>
 export type PublicPost = z.infer<typeof publicPostSchema>
-export type PrivatePost = z.infer<typeof privatePostSchema>
 export type PostIdParams = z.infer<typeof postIdSchema>
 export type PostCreatedByParams = z.infer<typeof postCreatedBySchema>
 export type PostModifiedByParams = z.infer<typeof postModifiedBySchema>
