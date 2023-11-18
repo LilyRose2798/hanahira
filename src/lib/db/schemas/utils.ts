@@ -75,9 +75,9 @@ export type DefaultMask<T extends Table> = {} extends _DefaultMask<T> ? Record<s
 type QueryParamsOfSchema<T extends z.ZodRawShape> = z.ZodObject<{ [K in keyof T]: T[K] extends z.ZodNullable<infer U> ? U : T[K] }
   & typeof paginationSchema.shape & typeof sortingSchema.shape>
 
-const optPick = <T extends z.ZodRawShape, Mask extends { [_ in keyof T]?: true }>(schema: z.ZodObject<T>, mask?: Mask):
+const optPick = <T extends z.ZodRawShape, Mask extends { [_ in keyof T]?: true }>(shape: T, mask?: Mask):
   typeof mask extends undefined ? z.ZodObject<T> : z.ZodObject<Pick<T, Extract<keyof T, keyof Mask>>> => (
-    mask === undefined ? schema : schema.pick(mask) as any)
+    mask === undefined ? z.object(shape) : z.object(shape).pick(mask) as any)
 
 export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name: string) => <
   PublicMask extends { [_ in keyof T["_"]["columns"]]?: true },
@@ -87,10 +87,11 @@ export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name:
   const title = titleCase(name)
   const createdAt = z.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) })
   const modifiedAt = z.date().openapi({ description: `The date the ${name} was last modified`, example: new Date(0) })
-  const schema = z.object({ ...schemaShape, createdAt, modifiedAt }).openapi({ ref: title, title, description: `The data for a ${name}` })
-  const publicSchema = optPick<typeof schema.shape, PublicMask>(schema as any, publicMask)
+  const shape = { ...schemaShape, createdAt, modifiedAt }
+  const schema = z.object(shape).openapi({ ref: title, title, description: `The data for a ${name}` })
+  const publicSchema = optPick<typeof schema.shape, PublicMask>(shape, publicMask)
   publicSchema._def.openapi = { title, description: `The public data for a ${name}` }
-  const privateSchema = optPick<typeof schema.shape, PrivateMask>(schema as any, privateMask)
+  const privateSchema = optPick<typeof schema.shape, PrivateMask>(shape, privateMask)
   privateSchema._def.openapi = { title, description: `The private data for a ${name}` }
   const idSchema = z.object(("id" in schemaShape ? { id: (schemaShape.id as z.ZodTypeAny) } : {}) as typeof schemaShape extends { id: any } ? { id: typeof schemaShape["id"] } : {})
   const insertSchema = z.object(Object.fromEntries(Object.entries(schemaShape).map(([k, v]) => (
