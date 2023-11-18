@@ -7,7 +7,7 @@ import { validateAuth } from "@/lib/lucia"
 import Image from "next/image"
 
 export const Navbar = async () => {
-  const session = await validateAuth()
+  const { user } = await validateAuth()
   return (
     <nav className="py-2 flex items-center justify-between transition-all duration-300">
       <h1 className="font-semibold hover:opacity-75 transition-hover cursor-pointer">
@@ -15,18 +15,18 @@ export const Navbar = async () => {
       </h1>
       <div className="space-x-2 flex items-center">
         <ThemeToggle />
-        {session ? (
+        {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar>
                 <AvatarFallback>
-                  {(session.user.name ?? session.user.username).split(" ").map(word => word[0].toUpperCase()).join("")}
+                  {(user.name ?? user.username).split(" ").map(word => word[0].toUpperCase()).join("")}
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-32">
               <DropdownMenuLabel>
-                <span className="font-semibold">{(session.user.name ?? session.user.username)}</span>
+                <span className="font-semibold">{(user.name ?? user.username)}</span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <Link href="/account">

@@ -6,7 +6,7 @@ import { NewPostForm } from "@/components/posts/NewPostForm"
 export const metadata: Metadata = { title: "New Post" }
 
 const NewPost = async () => {
-  const session = await validateAuth()
+  const { session } = await validateAuth()
   if (!session) redirect("/sign-in")
   return (
     <section className="container mt-6">

@@ -7,7 +7,7 @@ import { Metadata } from "next"
 export const metadata: Metadata = { title: "Posts" }
 
 const Posts = async () => {
-  const session = await validateAuth()
+  const { session } = await validateAuth()
   const signedIn = !!session
   const posts = await findPosts()
   return (

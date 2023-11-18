@@ -3,7 +3,7 @@ import { validateAuth } from "@/lib/lucia"
 import { redirect } from "next/navigation"
 
 const Home = async () => {
-  const session = await validateAuth()
+  const { session } = await validateAuth()
   if (!session) redirect("/sign-up")
   return (
     <section className="container">

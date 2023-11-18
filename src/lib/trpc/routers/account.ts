@@ -24,7 +24,7 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(z.void())
     .output(userSchema)
-    .query(async ({ ctx: { session: { user: { userId: id } } } }) => findUserById({ id })),
+    .query(async ({ ctx: { user: { id } } }) => findUserById({ id })),
   replace: p
     .meta({ openapi: {
       method: "PUT",
@@ -44,7 +44,7 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(replaceUserSchema.omit({ id: true }))
     .output(userSchema)
-    .mutation(async ({ input: user, ctx: { session: { user: { userId: id } } } }) => (
+    .mutation(async ({ input: user, ctx: { user: { id } } }) => (
       replaceUser({ id, ...user }).then(invalidateAuthAndReturn))),
   update: p
     .meta({ openapi: {
@@ -65,7 +65,7 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(updateUserSchema.omit({ id: true }))
     .output(userSchema)
-    .mutation(async ({ input: user, ctx: { session: { user: { userId: id } } } }) => (
+    .mutation(async ({ input: user, ctx: { user: { id } } }) => (
       updateUser({ id, ...user }).then(invalidateAuthAndReturn))),
   delete: p
     .meta({ openapi: {
@@ -85,6 +85,6 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(z.void())
     .output(userSchema)
-    .mutation(async ({ ctx: { session: { user: { userId: id } } } }) => (
+    .mutation(async ({ ctx: { user: { id } } }) => (
       deleteUser({ id }).then(invalidateAuthAndReturn))),
 })

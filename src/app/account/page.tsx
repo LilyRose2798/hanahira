@@ -6,13 +6,13 @@ import { redirect } from "next/navigation"
 export const metadata: Metadata = { title: "Account" }
 
 const Account = async () => {
-  const session = await validateAuth()
+  const { session, user } = await validateAuth()
   if (!session) redirect("/sign-in")
   return (
     <section className="container">
       <h1 className="text-3xl font-semibold my-6">Account</h1>
       <div className="space-y-6">
-        <UserSettings session={session} />
+        <UserSettings user={user} />
       </div>
     </section>
   )

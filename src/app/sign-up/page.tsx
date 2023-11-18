@@ -7,7 +7,7 @@ import { Metadata } from "next"
 export const metadata: Metadata = { title: "Sign Up" }
 
 const SignUp = async () => {
-  const session = await validateAuth()
+  const { session } = await validateAuth()
   if (session) redirect("/")
   return (
     <section className="container max-w-lg mx-auto my-4 bg-secondary p-10">

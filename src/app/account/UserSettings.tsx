@@ -1,11 +1,11 @@
 "use client"
 import UpdateNameCard from "@/app/account/UpdateNameCard"
 import UpdateEmailCard from "@/app/account/UpdateEmailCard"
-import { Session } from "lucia"
+import { User } from "lucia"
 
-export const UserSettings = ({ session }: { session: Session | null }) => (<>
-  <UpdateNameCard name={session?.user.name ?? ""} />
-  <UpdateEmailCard email={session?.user.email ?? ""} />
+export const UserSettings = ({ user }: { user: User | null }) => (<>
+  <UpdateNameCard name={user?.name ?? ""} />
+  <UpdateEmailCard email={user?.email ?? ""} />
 </>)
 
 export default UserSettings

@@ -23,6 +23,7 @@ export const {
     .openapi({ description: "The user's unique username", example: "oshino_shinobu" }),
   email: z.string().email().max(512).nullable().openapi({ description: "The user's email address", example: "shinobu@example.com" }),
   role: z.enum(roles).openapi({ description: "The user's role", example: defaultRole }),
+  passwordHash: z.string().openapi({ description: "The user's password hash", example: "asdf" }),
 }, { role: true }, { id: true, name: true, username: true, role: true, createdAt: true })
 
 export const usernameSchema = userSchema.pick({ username: true })
