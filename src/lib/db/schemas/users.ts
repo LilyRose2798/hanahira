@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
-import { userTableSchemas } from "@/lib/db/schemas/utils"
+import { baseTableSchemas } from "@/lib/db/schemas/utils"
 import { UsersTable } from "@/lib/db/tables/users"
 import { defaultRole, roles } from "@/lib/db/roles"
 
@@ -8,22 +8,26 @@ extendZodWithOpenApi(z)
 
 export const {
   schema: userSchema,
+  publicSchema: publicUserSchema,
+  privateSchema: privateUserSchema,
   idSchema: userIdSchema,
   querySchema: queryUserSchema,
   createSchema: createUserSchema,
   replaceSchema: replaceUserSchema,
   updateSchema: updateUserSchema,
   defaults: userDefaults,
-} = userTableSchemas<UsersTable>("user", {
+} = baseTableSchemas<UsersTable>("user")({
   id: z.string().openapi({ description: "The user's ID", example: "105b7lip5nqptbw" }),
   name: z.string().min(1).max(128).nullable().openapi({ description: "The user's display name", example: "Oshino Shinobu" }),
   username: z.string().min(1).max(64).regex(/[a-z0-9_-]+/, "username may only contain lowercase letters, numbers, underscores (_), and dashes (-)")
     .openapi({ description: "The user's unique username", example: "oshino_shinobu" }),
   email: z.string().email().max(512).nullable().openapi({ description: "The user's email address", example: "shinobu@example.com" }),
   role: z.enum(roles).openapi({ description: "The user's role", example: defaultRole }),
-}, { role: true })
+}, { role: true }, { id: true, name: true, username: true, role: true, createdAt: true })
 
 export type User = z.infer<typeof userSchema>
+export type PublicUser = z.infer<typeof publicUserSchema>
+export type PrivateUser = z.infer<typeof privateUserSchema>
 export type UserIdParams = z.infer<typeof userIdSchema>
 export type QueryUserParams = z.infer<typeof queryUserSchema>
 export type CreateUserParams = z.infer<typeof createUserSchema>

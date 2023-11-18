@@ -66,7 +66,7 @@ type Implement<Model> = {
     : z.ZodType<Model[key]>
 }
 
-export const zodModel = <T = never>(name: string, schemaShape: Implement<T>) => z.object(schemaShape)
+export const zodModel = <T = never>(name: string) => (schemaShape: Implement<T>) => z.object(schemaShape)
   .openapi({ ref: titleCase(name), title: titleCase(name), description: `The data for a ${name}` })
 
 type _DefaultMask<T extends Table> = OmitMeta<OmitId<{ [_ in { [K in keyof T["_"]["columns"]]: T["_"]["columns"][K] extends AnyColumn<{ notNull: true, hasDefault: true }> ? K : never }[keyof T["_"]["columns"]]]: true }>>
@@ -75,14 +75,23 @@ export type DefaultMask<T extends Table> = {} extends _DefaultMask<T> ? Record<s
 type QueryParamsOfSchema<T extends z.ZodRawShape> = z.ZodObject<{ [K in keyof T]: T[K] extends z.ZodNullable<infer U> ? U : T[K] }
   & typeof paginationSchema.shape & typeof sortingSchema.shape>
 
-export const userTableSchemas = <T extends TableWithTimestampMeta = never>(
-  name: string, schemaShape: OmitMeta<BuildSelectSchema<T, {}>>, defaultMask: DefaultMask<T>) => {
+const optPick = <T extends z.ZodRawShape, Mask extends { [_ in keyof T]?: true }>(schema: z.ZodObject<T>, mask?: Mask):
+  typeof mask extends undefined ? z.ZodObject<T> : z.ZodObject<Pick<T, Extract<keyof T, keyof Mask>>> => (
+    mask === undefined ? schema : schema.pick(mask) as any)
+
+export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name: string) => <
+  PublicMask extends { [_ in keyof T["_"]["columns"]]?: true },
+  PrivateMask extends { [_ in keyof T["_"]["columns"]]?: true },
+>(schemaShape: EnhancedOmit<BuildSelectSchema<T, {}>, keyof TimestampMetaColumns>,
+    defaultMask: DefaultMask<T>, publicMask?: PublicMask, privateMask?: PrivateMask) => {
   const title = titleCase(name)
-  const timestampMetaColumns = {
-    createdAt: z.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) }),
-    modifiedAt: z.date().openapi({ description: `The date the ${name} was last modified`, example: new Date(0) }),
-  }
-  const schema = z.object({ ...schemaShape, ...timestampMetaColumns }).openapi({ ref: title, title, description: `The data for a ${name}` })
+  const createdAt = z.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) })
+  const modifiedAt = z.date().openapi({ description: `The date the ${name} was last modified`, example: new Date(0) })
+  const schema = z.object({ ...schemaShape, createdAt, modifiedAt }).openapi({ ref: title, title, description: `The data for a ${name}` })
+  const publicSchema = optPick<typeof schema.shape, PublicMask>(schema as any, publicMask)
+  publicSchema._def.openapi = { title, description: `The public data for a ${name}` }
+  const privateSchema = optPick<typeof schema.shape, PrivateMask>(schema as any, privateMask)
+  privateSchema._def.openapi = { title, description: `The private data for a ${name}` }
   const idSchema = z.object(("id" in schemaShape ? { id: (schemaShape.id as z.ZodTypeAny) } : {}) as typeof schemaShape extends { id: any } ? { id: typeof schemaShape["id"] } : {})
   const insertSchema = z.object(Object.fromEntries(Object.entries(schemaShape).map(([k, v]) => (
     [k, v instanceof z.ZodNullable || k in defaultMask ? (v as z.ZodTypeAny).optional() : v]))) as OmitMeta<BuildInsertSchema<T, {}>>)
@@ -97,19 +106,18 @@ export const userTableSchemas = <T extends TableWithTimestampMeta = never>(
   const updateSchema = insertSchema.required().partial().required({ id: true }).openapi({ title, description: `The data to update a ${name} with` })
   const defaults = Object.fromEntries(Object.entries(insertSchema.shape)
     .flatMap(([k, v]) => (v instanceof z.ZodOptional ? [[k, sqlDefault]] : []))) as SQLDefaults<z.infer<typeof createSchema>>
-  return { schema, idSchema, querySchema, createSchema, replaceSchema, updateSchema, defaults }
+  return { schema, publicSchema, privateSchema, idSchema, querySchema, createSchema, replaceSchema, updateSchema, defaults }
 }
 
-export const tableSchemas = <T extends TableWithMeta = never>(
-  name: string, schemaShape: OmitMeta<BuildSelectSchema<T, {}>>, defaultMask: DefaultMask<T>) => {
-  const { schema: _schema, querySchema: _querySchema, ...rest } = userTableSchemas<T>(name, schemaShape, defaultMask)
-  const userMetaColumns = {
-    createdBy: z.string().openapi({ description: `The ID of the user the ${name} was created by`, example: "105b7lip5nqptbw" }),
-    modifiedBy: z.string().openapi({ description: `The ID of the user the ${name} was last modified by`, example: "105b7lip5nqptbw" }),
-  }
-  const schema = z.object({ ..._schema.shape, ...userMetaColumns }).openapi(_schema._def.openapi as any)
-  const createdBySchema = z.object({ createdBy: userMetaColumns.createdBy })
-  const modifiedBySchema = z.object({ modifiedBy: userMetaColumns.modifiedBy })
-  const querySchema = z.object({ ..._querySchema.shape, ...z.object(userMetaColumns).partial().shape })
-  return { schema, createdBySchema, modifiedBySchema, querySchema, ...rest }
+export const tableSchemas = <T extends TableWithMeta = never>(name: string) => <
+  PublicMask extends { [_ in keyof T["_"]["columns"]]?: true },
+  PrivateMask extends { [_ in keyof T["_"]["columns"]]?: true },
+>(schemaShape: EnhancedOmit<BuildSelectSchema<T, {}>, keyof MetaColumns>,
+    defaultMask: DefaultMask<T>, publicMask?: PublicMask, privateMask?: PrivateMask) => {
+  const createdBy = z.string().openapi({ description: `The ID of the user the ${name} was created by`, example: "105b7lip5nqptbw" })
+  const modifiedBy = z.string().openapi({ description: `The ID of the user the ${name} was last modified by`, example: "105b7lip5nqptbw" })
+  const createdBySchema = z.object({ createdBy })
+  const modifiedBySchema = z.object({ modifiedBy })
+  const res = baseTableSchemas<T>(name)({ ...schemaShape, createdBy, modifiedBy } as any, defaultMask, publicMask, privateMask)
+  return { createdBySchema, modifiedBySchema, ...res }
 }
