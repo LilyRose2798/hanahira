@@ -72,8 +72,7 @@ export const zodModel = <T = never>(name: string) => (schemaShape: Implement<T>)
 type _DefaultMask<T extends Table> = OmitMeta<OmitId<{ [_ in { [K in keyof T["_"]["columns"]]: T["_"]["columns"][K] extends AnyColumn<{ notNull: true, hasDefault: true }> ? K : never }[keyof T["_"]["columns"]]]: true }>>
 export type DefaultMask<T extends Table> = {} extends _DefaultMask<T> ? Record<string, never> : _DefaultMask<T>
 
-type QueryParamsOfSchema<T extends z.ZodRawShape> = z.ZodObject<{ [K in keyof T]: T[K] extends z.ZodNullable<infer U> ? U : T[K] }
-  & typeof paginationSchema.shape & typeof sortingSchema.shape>
+const extraQuerySchemaShape = { ...paginationSchema.partial().shape, ...sortingSchema.partial().shape }
 
 const optPick = <T extends z.ZodRawShape, Mask extends { [_ in keyof T]?: true }>(shape: T, mask?: Mask):
   typeof mask extends undefined ? z.ZodObject<T> : z.ZodObject<Pick<T, Extract<keyof T, keyof Mask>>> => (
@@ -86,25 +85,26 @@ export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name:
   const title = titleCase(name)
   const createdAt = z.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) })
   const modifiedAt = z.date().openapi({ description: `The date the ${name} was last modified`, example: new Date(0) })
-  const shape = { ...schemaShape, createdAt, modifiedAt }
-  const schema = z.object(shape).openapi({ ref: title, title, description: `The data for a ${name}` })
-  const publicSchema = optPick<typeof schema.shape, PublicMask>(shape, publicMask)
+  const schema = z.object({ ...schemaShape, createdAt, modifiedAt }).openapi({ ref: title, title, description: `The data for a ${name}` })
+  const publicSchema = optPick(schema.shape, publicMask)
   publicSchema._def.openapi = { title, description: `The public data for a ${name}` }
   const idSchema = z.object(("id" in schemaShape ? { id: (schemaShape.id as z.ZodTypeAny) } : {}) as typeof schemaShape extends { id: any } ? { id: typeof schemaShape["id"] } : {})
   const insertSchema = z.object(Object.fromEntries(Object.entries(schemaShape).map(([k, v]) => (
     [k, v instanceof z.ZodNullable || k in defaultMask ? (v as z.ZodTypeAny).optional() : v]))) as OmitMeta<BuildInsertSchema<T, {}>>)
-  const querySchema = (z.object({
-    ...(Object.fromEntries(Object.entries(schema.shape as any)
-      .map(([k, v]) => [k, v instanceof z.ZodNullable ? v.unwrap() : v]))) as any,
-    ...paginationSchema.shape,
-    ...sortingSchema.shape,
-  }) as QueryParamsOfSchema<typeof schema.shape>).partial()
+  const baseQuerySchemaShape = Object.fromEntries(Object.entries(schema.shape as any)
+    .map(([k, v]) => [k, (v instanceof z.ZodNullable ? v.unwrap() : v).optional()])) as {
+      // eslint-disable-next-line no-use-before-define
+      [K in keyof typeof schema.shape]: z.ZodOptional<typeof schema.shape[K] extends z.ZodNullable<infer U> ? U : typeof schema.shape[K]>
+    }
+  const querySchema = z.object({ ...baseQuerySchemaShape, ...extraQuerySchemaShape })
+  const publicQuerySchemaShape = optPick(baseQuerySchemaShape, publicMask).shape
+  const publicQuerySchema = z.object({ ...publicQuerySchemaShape, ...extraQuerySchemaShape })
   const createSchema = insertSchema.omit({ id: true }).openapi({ title, description: `The data to create a new ${name} with` })
   const replaceSchema = insertSchema.required({ id: true }).openapi({ title, description: `The data to replace a ${name} with` })
   const updateSchema = insertSchema.required().partial().required({ id: true }).openapi({ title, description: `The data to update a ${name} with` })
   const defaults = Object.fromEntries(Object.entries(insertSchema.shape)
     .flatMap(([k, v]) => (v instanceof z.ZodOptional ? [[k, sqlDefault]] : []))) as SQLDefaults<z.infer<typeof createSchema>>
-  return { schema, publicSchema, idSchema, querySchema, createSchema, replaceSchema, updateSchema, defaults }
+  return { schema, publicSchema, idSchema, querySchema, publicQuerySchema, createSchema, replaceSchema, updateSchema, defaults }
 }
 
 export const tableSchemas = <T extends TableWithMeta = never>(name: string) => <

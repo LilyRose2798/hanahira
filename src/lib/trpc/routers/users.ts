@@ -4,7 +4,7 @@ import { invalidateAuthAndReturn } from "@/lib/lucia"
 import { userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, userSchema, queryUserSchema } from "@/lib/db/schemas/users"
 import { postSchema } from "@/lib/db/schemas/posts"
 import { findUsers, findUserById, createUser, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
-import { findPostsByCreator } from "@/lib/api/posts"
+import { findPostsCreatedById } from "@/lib/api/posts"
 
 export const usersRouter = r({
   query: r({
@@ -13,10 +13,10 @@ export const usersRouter = r({
         method: "GET",
         path: "/users",
         tags: ["Users"],
-        summary: "Query all user data",
-        description: "Query the data of all users",
+        summary: "Query user data",
+        description: "Query the data of users",
         protect: true,
-        successDescription: "All user data successfully returned",
+        successDescription: "User data successfully returned",
         errorResponses: {
           401: "Not signed in",
           500: "Unexpected server error",
@@ -53,17 +53,21 @@ export const usersRouter = r({
         method: "GET",
         path: "/users/{id}/posts",
         tags: ["Users", "Posts"],
-        summary: "Query the posts created by a specific user ID",
-        description: "Query the data of the post with the specified ID",
+        summary: "Query a user's posts",
+        description: "Query the data of the post's created by the user with the specified ID",
+        protect: true,
         successDescription: "Post data successfully returned",
         errorResponses: {
           400: "Invalid user ID",
+          401: "Not signed in",
           500: "Unexpected server error",
         },
       } })
+      .use(hasAuth)
+      .use(hasRole("SITE_MODERATOR"))
       .input(userIdSchema)
       .output(postSchema.array())
-      .query(async ({ input: { id } }) => findPostsByCreator({ createdBy: id })),
+      .query(async ({ input: { id } }) => findPostsCreatedById({ id })),
   }),
   create: p
     .meta({ openapi: {

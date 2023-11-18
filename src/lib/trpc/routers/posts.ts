@@ -10,9 +10,9 @@ export const postsRouter = r({
         method: "GET",
         path: "/posts",
         tags: ["Posts"],
-        summary: "Query all post data",
-        description: "Query the data of all posts",
-        successDescription: "All post data successfully returned",
+        summary: "Query post data",
+        description: "Query the data of posts",
+        successDescription: "Post data successfully returned",
         errorResponses: {
           400: "Invalid post data",
           500: "Unexpected server error",

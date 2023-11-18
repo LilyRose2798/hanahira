@@ -5,13 +5,17 @@ import { postDefaults, PostIdParams, PostCreatedByParams, CreatePostParams, Repl
 import { posts } from "@/lib/db/tables/posts"
 import { parseFound, parseCreated, parseFoundFirst } from "@/lib/api/utils"
 import nanoid from "@/lib/db/nanoid"
+import { UserIdParams, UsernameParams } from "@/lib/db/schemas/users"
 
 export const findPosts = ({ page, sort, ...post }: QueryPostParams = {}) => db.query.posts
   .findMany({ ...whereConfig(post), ...paginationConfig({ page }), ...sortingConfig(sort) }).execute().then(parseFound)
 export const findPostById = ({ id }: PostIdParams) => db.query.posts
   .findFirst({ where: (posts, { eq }) => eq(posts.id, id) }).execute().then(parseFound)
-export const findPostsByCreator = ({ createdBy }: PostCreatedByParams) => db.query.posts
-  .findMany({ where: (posts, { eq }) => eq(posts.createdBy, createdBy) }).execute().then(parseFound)
+export const findPostsCreatedById = ({ id }: UserIdParams) => db.query.posts
+  .findMany({ where: (posts, { eq }) => eq(posts.createdBy, id) }).execute().then(parseFound)
+export const findPostsCreatedByUsername = ({ username }: UsernameParams) => db.query.users
+  .findFirst({ with: { posts: true }, where: (users, { eq }) => eq(users.username, username) })
+  .execute().then(parseFound).then(x => x.posts)
 export const createPost = (post: CreatePostParams & PostCreatedByParams) => db.insert(posts)
   .values({ ...post, id: nanoid(), modifiedBy: post.createdBy, modifiedAt: new Date() }).returning().execute().then(parseCreated)
 export const replacePost = ({ id, ...post }: ReplacePostParams & PostCreatedByParams) => db.update(posts)

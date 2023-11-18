@@ -11,6 +11,7 @@ export const {
   publicSchema: publicUserSchema,
   idSchema: userIdSchema,
   querySchema: queryUserSchema,
+  publicQuerySchema: publicQueryUserSchema,
   createSchema: createUserSchema,
   replaceSchema: replaceUserSchema,
   updateSchema: updateUserSchema,
@@ -24,14 +25,7 @@ export const {
   role: z.enum(roles).openapi({ description: "The user's role", example: defaultRole }),
 }, { role: true }, { id: true, name: true, username: true, role: true, createdAt: true })
 
-export type User = z.infer<typeof userSchema>
-export type PublicUser = z.infer<typeof publicUserSchema>
-export type UserIdParams = z.infer<typeof userIdSchema>
-export type QueryUserParams = z.infer<typeof queryUserSchema>
-export type CreateUserParams = z.infer<typeof createUserSchema>
-export type ReplaceUserParams = z.infer<typeof replaceUserSchema>
-export type UpdateUserParams = z.infer<typeof updateUserSchema>
-
+export const usernameSchema = userSchema.pick({ username: true })
 export const passwordSchema = z.string().min(1).max(256)
   .openapi({ description: "The user's password", example: "hunter2" })
 export const signInSchema = z.object({ username: userSchema.shape.username, password: passwordSchema })
@@ -42,3 +36,13 @@ export const signUpSchema = z.object({ username: userSchema.shape.username, pass
 export type Password = z.infer<typeof passwordSchema>
 export type SignInParams = z.infer<typeof signInSchema>
 export type SignUpParams = z.infer<typeof signUpSchema>
+
+export type User = z.infer<typeof userSchema>
+export type PublicUser = z.infer<typeof publicUserSchema>
+export type UserIdParams = z.infer<typeof userIdSchema>
+export type UsernameParams = z.infer<typeof usernameSchema>
+export type QueryUserParams = z.infer<typeof queryUserSchema>
+export type PublicQueryUserParams = z.infer<typeof publicQueryUserSchema>
+export type CreateUserParams = z.infer<typeof createUserSchema>
+export type ReplaceUserParams = z.infer<typeof replaceUserSchema>
+export type UpdateUserParams = z.infer<typeof updateUserSchema>
