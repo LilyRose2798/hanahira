@@ -2,7 +2,7 @@ import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
 import { baseTableSchemas } from "@/lib/db/schemas/utils"
 import { UsersTable } from "@/lib/db/tables/users"
-import { defaultRole, roles } from "@/lib/db/roles"
+import { userRoles, defaultUserRole } from "@/lib/db/enums/userRole"
 
 extendZodWithOpenApi(z)
 
@@ -22,7 +22,7 @@ export const {
   username: z.string().min(1).max(64).regex(/[a-z0-9_-]+/, "username may only contain lowercase letters, numbers, underscores (_), and dashes (-)")
     .openapi({ description: "The user's unique username", example: "oshino_shinobu" }),
   email: z.string().email().max(512).nullable().openapi({ description: "The user's email address", example: "shinobu@example.com" }),
-  role: z.enum(roles).openapi({ description: "The user's role", example: defaultRole }),
+  role: z.enum(userRoles).openapi({ description: "The user's role", example: defaultUserRole }),
   passwordHash: z.string().openapi({ description: "The user's password hash", example: "asdf" }),
 }, { role: true }, { id: true, name: true, username: true, role: true, createdAt: true })
 

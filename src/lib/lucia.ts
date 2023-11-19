@@ -21,9 +21,9 @@ export const auth = new Lucia(new PostgresJsAdapter(client, {
     },
   },
   // eslint-disable-next-line camelcase
-  getUserAttributes: ({ username, name, email, role, password_hash, created_at, modified_at }): Omit<User, "id"> => (
+  getUserAttributes: ({ username, name, email, role, password_hash, created_at, updated_at }): Omit<User, "id"> => (
     // eslint-disable-next-line camelcase
-    { username, name, email, role, passwordHash: password_hash, createdAt: created_at, modifiedAt: modified_at }),
+    { username, name, email, role, passwordHash: password_hash, createdAt: created_at, updatedAt: updated_at }),
   // eslint-disable-next-line camelcase
   getSessionAttributes: ({ created_at }) => (
     // eslint-disable-next-line camelcase

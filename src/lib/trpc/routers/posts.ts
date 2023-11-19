@@ -80,8 +80,8 @@ export const postsRouter = r({
     .input(replacePostSchema)
     .use(canEditPost)
     .output(postSchema)
-    .mutation(async ({ input: post, ctx: { user: { id: modifiedBy } } }) => (
-      replacePost({ ...post, modifiedBy }))),
+    .mutation(async ({ input: post, ctx: { user: { id: updatedBy } } }) => (
+      replacePost({ ...post, updatedBy }))),
   update: p
     .meta({ openapi: {
       method: "PATCH",
@@ -103,8 +103,8 @@ export const postsRouter = r({
     .input(updatePostSchema)
     .use(canEditPost)
     .output(postSchema)
-    .mutation(async ({ input: post, ctx: { user: { id: modifiedBy } } }) => (
-      updatePost({ ...post, modifiedBy }))),
+    .mutation(async ({ input: post, ctx: { user: { id: updatedBy } } }) => (
+      updatePost({ ...post, updatedBy }))),
   delete: p
     .meta({ openapi: {
       method: "POST",

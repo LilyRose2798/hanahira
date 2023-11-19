@@ -4,11 +4,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { trpc } from "@/lib/trpc/client"
 import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 import { Post, postSchema } from "@/lib/db/schemas/posts"
 import { preprocessEmptyString } from "@/lib/db/schemas/utils"
 import { z } from "zod"
+import { postRatingName, postRatings } from "@/lib/db/enums/postRating"
 
 export const PostForm = ({ post, closeModal }: { post?: Post, closeModal: () => void }) => {
   const { toast, onError } = useToast()
@@ -18,12 +20,14 @@ export const PostForm = ({ post, closeModal }: { post?: Post, closeModal: () => 
   const schema = z.object({
     description: preprocessEmptyString(postSchema.shape.description),
     sourceUrl: preprocessEmptyString(postSchema.shape.sourceUrl),
+    rating: preprocessEmptyString(postSchema.shape.rating),
   })
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
       description: post?.description ?? "",
       sourceUrl: post?.sourceUrl ?? "",
+      rating: post?.rating,
     },
   })
 
@@ -55,6 +59,27 @@ export const PostForm = ({ post, closeModal }: { post?: Post, closeModal: () => 
             <FormLabel>Source Url</FormLabel>
             <FormControl>
               <Input {...field} value={field.value ?? undefined} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}/>
+        <FormField control={form.control} name="rating" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Rating</FormLabel>
+            <FormControl>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">{field.value ?? "Pick a rating"}</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>Post Rating</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup defaultValue={field.value ?? undefined} onValueChange={field.onChange}>
+                    {postRatings.map(r => <DropdownMenuRadioItem key={r} value={r}>{postRatingName(r)}</DropdownMenuRadioItem>)}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Input {...field} type="" value={field.value ?? undefined} />
             </FormControl>
             <FormMessage />
           </FormItem>

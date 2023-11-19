@@ -32,12 +32,12 @@ export type SortingParams = z.infer<typeof sortingSchema>
 
 export const timestampMetaColumnMask = {
   createdAt: true,
-  modifiedAt: true,
+  updatedAt: true,
 } satisfies { [K in keyof TimestampMetaColumns]: true }
 
 export const userMetaColumnMask = {
   createdBy: true,
-  modifiedBy: true,
+  updatedBy: true,
 } satisfies { [K in keyof UserMetaColumns]: true }
 
 export const metaColumnMask = {
@@ -84,8 +84,8 @@ export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name:
     defaultMask: DefaultMask<T>, publicMask?: PublicMask) => {
   const title = titleCase(name)
   const createdAt = z.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) })
-  const modifiedAt = z.date().openapi({ description: `The date the ${name} was last modified`, example: new Date(0) })
-  const schema = z.object({ ...schemaShape, createdAt, modifiedAt }).openapi({ ref: title, title, description: `The data for a ${name}` })
+  const updatedAt = z.date().openapi({ description: `The date the ${name} was last updated`, example: new Date(0) })
+  const schema = z.object({ ...schemaShape, createdAt, updatedAt }).openapi({ ref: title, title, description: `The data for a ${name}` })
   const publicSchema = optPick(schema.shape, publicMask)
   publicSchema._def.openapi = { title, description: `The public data for a ${name}` }
   const idSchema = z.object(("id" in schemaShape ? { id: (schemaShape.id as z.ZodTypeAny) } : {}) as typeof schemaShape extends { id: any } ? { id: typeof schemaShape["id"] } : {})
@@ -113,9 +113,9 @@ export const tableSchemas = <T extends TableWithMeta = never>(name: string) => <
 >(schemaShape: EnhancedOmit<BuildSelectSchema<T, {}>, keyof MetaColumns>,
     defaultMask: DefaultMask<T>, publicMask?: PublicMask) => {
   const createdBy = z.string().openapi({ description: `The ID of the user the ${name} was created by`, example: "105b7lip5nqptbw" })
-  const modifiedBy = z.string().openapi({ description: `The ID of the user the ${name} was last modified by`, example: "105b7lip5nqptbw" })
+  const updatedBy = z.string().openapi({ description: `The ID of the user the ${name} was last updated by`, example: "105b7lip5nqptbw" })
   const createdBySchema = z.object({ createdBy })
-  const modifiedBySchema = z.object({ modifiedBy })
-  const res = baseTableSchemas<T>(name)({ ...schemaShape, createdBy, modifiedBy } as any, defaultMask, publicMask)
-  return { createdBySchema, modifiedBySchema, ...res }
+  const updatedBySchema = z.object({ updatedBy })
+  const res = baseTableSchemas<T>(name)({ ...schemaShape, createdBy, updatedBy } as any, defaultMask, publicMask)
+  return { createdBySchema, updatedBySchema, ...res }
 }
