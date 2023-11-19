@@ -1,14 +1,13 @@
 import { relations } from "drizzle-orm"
 import { pgTable, text, pgEnum } from "drizzle-orm/pg-core"
 import { posts } from "@/lib/db/tables/posts"
-import { timestampMetaColumns } from "@/lib/db/tables/utils"
+import { idColumn, timestampMetaColumns } from "@/lib/db/tables/utils"
 import { roles, defaultRole } from "@/lib/db/roles"
-import nanoid from "@/lib/db/nanoid"
 
 export const userRole = pgEnum("user_role", roles)
 
 export const users = pgTable("user", {
-  id: text("id").primaryKey().$defaultFn(nanoid),
+  ...idColumn,
   username: text("username").notNull().unique(),
   name: text("name"),
   email: text("email"),

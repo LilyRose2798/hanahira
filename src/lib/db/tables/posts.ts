@@ -1,9 +1,8 @@
 import { pgTable, text } from "drizzle-orm/pg-core"
-import { metaColumns, userMetaRelations } from "@/lib/db/tables/utils"
-import nanoid from "@/lib/db/nanoid"
+import { idColumn, metaColumns, userMetaRelations } from "@/lib/db/tables/utils"
 
 export const posts = pgTable("post", {
-  id: text("id").primaryKey().$defaultFn(nanoid),
+  ...idColumn,
   description: text("description"),
   sourceUrl: text("source_url"),
   ...metaColumns,

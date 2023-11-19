@@ -1,6 +1,12 @@
 import { PgColumnBuilderBase, PgTableWithColumns, text, timestamp } from "drizzle-orm/pg-core"
 import { BuildColumns, relations } from "drizzle-orm"
 import { users } from "@/lib/db/tables/users"
+import nanoid from "@/lib/db/nanoid"
+
+export const idColumn = {
+  id: text("id").primaryKey().$defaultFn(nanoid),
+}
+export type IdColumn = typeof idColumn
 
 export const userMetaColumns = {
   createdBy: text("created_by").notNull().references(() => users.id),
