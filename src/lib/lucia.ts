@@ -4,6 +4,8 @@ import { headers, cookies } from "next/headers"
 import { PostgresJsAdapter } from "@lucia-auth/adapter-postgresql"
 import { client } from "@/lib/db"
 import { env } from "@/lib/env.mjs"
+import { User } from "@/lib/db/schemas/users"
+import { InferSelectModel } from "drizzle-orm"
 
 export const auth = new Lucia(new PostgresJsAdapter(client, {
   user: "user",
@@ -18,24 +20,26 @@ export const auth = new Lucia(new PostgresJsAdapter(client, {
       sameSite: "lax",
     },
   },
-  getUserAttributes: ({ username, name, email, role }) => ({ username, name, email, role }),
+  // eslint-disable-next-line camelcase
+  getUserAttributes: ({ id, username, name, email, role, password_hash, created_at, modified_at }): User => (
+    // eslint-disable-next-line camelcase
+    { id, username, name, email, role, passwordHash: password_hash, createdAt: created_at, modifiedAt: modified_at }),
   getSessionAttributes: ({}) => ({}),
 })
 
 declare module "lucia" {
   interface Register {
     Lucia: typeof auth
-    DatabaseUserAttributes: Omit<import("@/lib/db/schemas/users").User, "id" | "createdAt" | "modifiedAt">
+    DatabaseUserAttributes: InferSelectModel<import("@/lib/db/tables/users").UsersTable, { dbColumnNames: true }>
     DatabaseSessionAttributes: {}
   }
 }
 
-export const getAuthRequest = (requestMethod: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" = "GET") => (
-  auth.handleRequest(requestMethod, { headers, cookies, request: null }))
-export const validateAuth = async (authRequest = getAuthRequest()) => (
-  (await authRequest.validate()) ?? await authRequest.validateBearerToken())
-export const invalidateAuth = (authRequest = getAuthRequest()) => authRequest.invalidate()
+export const getAuthRequest = (csrfProtection: boolean = false) => (
+  auth.handleRequest(csrfProtection ? "POST" : "GET", { headers, cookies }))
+export const validateAuth = async (csrfProtection: boolean = false) => (
+  (async x => (await x.validate()) ?? await x.validateBearerToken()))(getAuthRequest(csrfProtection))
 export const invalidateAuthAndReturn = <T>(x: T) => {
-  invalidateAuth()
+  getAuthRequest().invalidate()
   return x
 }

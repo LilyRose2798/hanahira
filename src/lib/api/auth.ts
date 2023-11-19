@@ -11,7 +11,7 @@ export const signIn = async ({ username, password }: SignInParams) => {
   const validPassword = await verify(user.passwordHash, password)
   if (!validPassword) throw new TRPCError({ code: "BAD_REQUEST", message: "Incorrect username or password" })
   const session = await auth.createSession(user.id, {})
-  getAuthRequest("POST").setSessionCookie(session.id)
+  getAuthRequest().setSessionCookie(session.id)
   return session
 }
 
@@ -20,7 +20,7 @@ export const signUp = async ({ username, password }: SignUpParams) => {
     const passwordHash = await hash(password)
     const user = await createUser({ username, passwordHash })
     const session = await auth.createSession(user.id, {})
-    getAuthRequest("POST").setSessionCookie(session.id)
+    getAuthRequest().setSessionCookie(session.id)
     return session
   } catch (err) {
     if (err instanceof p.default.PostgresError && "code" in err && err.code === "23505") throw new TRPCError({ code: "CONFLICT", message: "Username already taken" })
@@ -30,6 +30,6 @@ export const signUp = async ({ username, password }: SignUpParams) => {
 
 export const signOut = async (session: Session) => {
   await auth.invalidateSession(session.id)
-  getAuthRequest("POST").deleteSessionCookie()
+  getAuthRequest().deleteSessionCookie()
   return session
 }

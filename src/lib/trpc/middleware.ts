@@ -8,7 +8,7 @@ import { validateAuth } from "@/lib/lucia"
 
 export const hasAuth = m()
   .create(async ({ next, ...opts }) => {
-    const { session, user } = await validateAuth()
+    const { session, user } = await validateAuth(opts.type === "mutation")
     if (!session) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not signed in" })
     return next({ ...opts, ctx: { ...opts.ctx, session, user } })
   })
