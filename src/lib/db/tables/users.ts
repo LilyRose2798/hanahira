@@ -22,10 +22,14 @@ export type UsersTable = typeof users
 
 export const userRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
-  postRatings: many(postRatings),
-  postFavourites: many(postFavourites),
-  postComments: many(postComments),
-  postCommentRatings: many(postCommentRatings),
+  createdPostRatings: many(postRatings, { relationName: "creator" }),
+  updatedPostRatings: many(postRatings, { relationName: "updater" }),
+  createdPostFavourites: many(postFavourites, { relationName: "creator" }),
+  updatedPostFavourites: many(postFavourites, { relationName: "updater" }),
+  createdPostComments: many(postComments, { relationName: "creator" }),
+  updatedPostComments: many(postComments, { relationName: "updater" }),
+  createdPostCommentRatings: many(postCommentRatings, { relationName: "creator" }),
+  updatedPostCommentRatings: many(postCommentRatings, { relationName: "updater" }),
   createdTags: many(tags, { relationName: "creator" }),
   updatedTags: many(tags, { relationName: "updater" }),
   createdTagAliases: many(tagAliases, { relationName: "creator" }),

@@ -3,10 +3,7 @@ import { postRatingEnum, postStatusEnum } from "@/lib/db/tables/enums"
 import { idColumn, metaColumns, userMetaRelations } from "@/lib/db/tables/utils"
 import { tags } from "@/lib/db/tables/tags"
 import { poolPosts } from "@/lib/db/tables/pools"
-import { users } from "@/lib/db/tables/users"
 import { relations } from "drizzle-orm"
-
-const { updatedBy: _, ...altMetaColumns } = metaColumns
 
 export const posts = pgTable("post", {
   ...idColumn,
@@ -35,13 +32,13 @@ export type PostTagsTable = typeof postTags
 export const postRatings = pgTable("post_rating", {
   postId: text("post_id").references(() => posts.id).notNull(),
   positive: boolean("postitive").notNull().default(true),
-  ...altMetaColumns,
+  ...metaColumns,
 }, table => ({ pk: primaryKey({ columns: [table.postId, table.createdBy] }) }))
 export type PostRatingsTable = typeof postRatings
 
 export const postFavourites = pgTable("post_favourite", {
   postId: text("post_id").references(() => posts.id).notNull(),
-  ...altMetaColumns,
+  ...metaColumns,
 }, table => ({ pk: primaryKey({ columns: [table.postId, table.createdBy] }) }))
 export type PostFavouritesTable = typeof postFavourites
 
@@ -49,16 +46,15 @@ export const postComments = pgTable("post_comment", {
   ...idColumn,
   postId: text("post_id").references(() => posts.id).notNull(),
   comment: text("comment").notNull(),
-  ...altMetaColumns,
+  ...metaColumns,
 })
 export type PostCommentsTable = typeof postComments
 
 export const postCommentRatings = pgTable("post_comment_rating", {
-  userId: text("user_id").references(() => users.id).notNull(),
   postCommentId: text("comment_id").references(() => postComments.id).notNull(),
   positive: boolean("postitive").notNull().default(true),
-  ...altMetaColumns,
-}, table => ({ pk: primaryKey({ columns: [table.userId, table.postCommentId] }) }))
+  ...metaColumns,
+}, table => ({ pk: primaryKey({ columns: [table.postCommentId, table.createdBy] }) }))
 export type PostCommentRatingsTable = typeof postCommentRatings
 
 export const postParentRelations = relations(postParents, ({ one }) => ({
@@ -75,23 +71,23 @@ export const postTagRelations = relations(postTags, ({ one }) => ({
 
 export const postRatingRelations = relations(postRatings, ({ one }) => ({
   post: one(posts, { fields: [postRatings.postId], references: [posts.id] }),
-  creator: one(users, { fields: [postRatings.createdBy], references: [users.id] }),
+  ...userMetaRelations(postRatings)({ one }),
 }))
 
 export const postFavouriteRelations = relations(postFavourites, ({ one }) => ({
   post: one(posts, { fields: [postFavourites.postId], references: [posts.id] }),
-  creator: one(users, { fields: [postFavourites.createdBy], references: [users.id] }),
+  ...userMetaRelations(postFavourites)({ one }),
 }))
 
 export const postCommentRelations = relations(postComments, ({ one, many }) => ({
   post: one(posts, { fields: [postComments.postId], references: [posts.id] }),
-  creator: one(users, { fields: [postComments.createdBy], references: [users.id] }),
   ratings: many(postCommentRatings),
+  ...userMetaRelations(postComments)({ one }),
 }))
 
 export const postCommentRatingRelations = relations(postCommentRatings, ({ one }) => ({
   comment: one(postComments, { fields: [postCommentRatings.postCommentId], references: [postComments.id] }),
-  creator: one(users, { fields: [postCommentRatings.createdBy], references: [users.id] }),
+  ...userMetaRelations(postCommentRatings)({ one }),
 }))
 
 export const postRelations = relations(posts, ({ one, many }) => ({
