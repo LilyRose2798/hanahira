@@ -1,7 +1,6 @@
 import { TRPCError, experimental_standaloneMiddleware as m } from "@trpc/server"
-import { User } from "lucia"
 import { findPostById } from "@/lib/api/posts"
-import { UserIdParams } from "@/lib/db/schemas/users"
+import { User, UserIdParams } from "@/lib/db/schemas/users"
 import { PostIdParams } from "@/lib/db/schemas/posts"
 import { Role, hasRole as _hasRole } from "@/lib/db/roles"
 import { validateAuth } from "@/lib/lucia"

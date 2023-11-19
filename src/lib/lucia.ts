@@ -21,17 +21,20 @@ export const auth = new Lucia(new PostgresJsAdapter(client, {
     },
   },
   // eslint-disable-next-line camelcase
-  getUserAttributes: ({ id, username, name, email, role, password_hash, created_at, modified_at }): User => (
+  getUserAttributes: ({ username, name, email, role, password_hash, created_at, modified_at }): Omit<User, "id"> => (
     // eslint-disable-next-line camelcase
-    { id, username, name, email, role, passwordHash: password_hash, createdAt: created_at, modifiedAt: modified_at }),
-  getSessionAttributes: ({}) => ({}),
+    { username, name, email, role, passwordHash: password_hash, createdAt: created_at, modifiedAt: modified_at }),
+  // eslint-disable-next-line camelcase
+  getSessionAttributes: ({ created_at }) => (
+    // eslint-disable-next-line camelcase
+    { createdAt: created_at }),
 })
 
 declare module "lucia" {
   interface Register {
     Lucia: typeof auth
-    DatabaseUserAttributes: InferSelectModel<import("@/lib/db/tables/users").UsersTable, { dbColumnNames: true }>
-    DatabaseSessionAttributes: {}
+    DatabaseUserAttributes: Omit<InferSelectModel<import("@/lib/db/tables/users").UsersTable, { dbColumnNames: true }>, "id">
+    DatabaseSessionAttributes: Omit<InferSelectModel<import("@/lib/db/tables/sessions").SessionsTable, { dbColumnNames: true }>, "id" | "user_id" | "expires_at">
   }
 }
 

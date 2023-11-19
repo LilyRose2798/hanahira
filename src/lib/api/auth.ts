@@ -1,5 +1,5 @@
 import { auth, getAuthRequest } from "@/lib/lucia"
-import { Session } from "lucia"
+import { Session } from "@/lib/db/schemas/sessions"
 import { SignInParams, SignUpParams } from "@/lib/db/schemas/users"
 import { createUser, findUserByUsername } from "@/lib/api/users"
 import { TRPCError } from "@trpc/server"
@@ -10,7 +10,8 @@ export const signIn = async ({ username, password }: SignInParams) => {
   const user = await findUserByUsername({ username })
   const validPassword = await verify(user.passwordHash, password)
   if (!validPassword) throw new TRPCError({ code: "BAD_REQUEST", message: "Incorrect username or password" })
-  const session = await auth.createSession(user.id, {})
+  // eslint-disable-next-line camelcase
+  const session = await auth.createSession(user.id, { created_at: new Date() })
   getAuthRequest().setSessionCookie(session.id)
   return session
 }
@@ -19,7 +20,8 @@ export const signUp = async ({ username, password }: SignUpParams) => {
   try {
     const passwordHash = await hash(password)
     const user = await createUser({ username, passwordHash })
-    const session = await auth.createSession(user.id, {})
+    // eslint-disable-next-line camelcase
+    const session = await auth.createSession(user.id, { created_at: new Date() })
     getAuthRequest().setSessionCookie(session.id)
     return session
   } catch (err) {
