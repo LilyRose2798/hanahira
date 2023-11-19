@@ -1,5 +1,5 @@
 import { pgTable, text } from "drizzle-orm/pg-core"
-import { metaColumns, metaRelations } from "@/lib/db/tables/utils"
+import { metaColumns, userMetaRelations } from "@/lib/db/tables/utils"
 import nanoid from "@/lib/db/nanoid"
 
 export const posts = pgTable("post", {
@@ -10,4 +10,4 @@ export const posts = pgTable("post", {
 })
 export type PostsTable = typeof posts
 
-export const postRelations = metaRelations(posts)
+export const postRelations = userMetaRelations(posts)
