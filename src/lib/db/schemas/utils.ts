@@ -89,8 +89,9 @@ export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name:
   const publicSchema = optPick(schema.shape, publicMask)
   publicSchema._def.openapi = { title, description: `The public data for a ${name}` }
   const idSchema = z.object(("id" in schemaShape ? { id: (schemaShape.id as z.ZodTypeAny) } : {}) as typeof schemaShape extends { id: any } ? { id: typeof schemaShape["id"] } : {})
-  const insertSchema = z.object(Object.fromEntries(Object.entries(schemaShape).map(([k, v]) => (
-    [k, v instanceof z.ZodNullable || k in defaultMask ? (v as z.ZodTypeAny).optional() : v]))) as OmitMeta<BuildInsertSchema<T, {}>>)
+  const insertSchema = z.object(Object.fromEntries(Object.entries(schemaShape).filter(([k, _]) => !(k in metaColumnMask)).map(([k, v]) => (
+    [k, v instanceof z.ZodNullable || k in defaultMask ? (v as z.ZodTypeAny).optional() : v]))) as
+      EnhancedOmit<BuildInsertSchema<T, {}>, keyof MetaColumns>)
   const baseQuerySchemaShape = Object.fromEntries(Object.entries(schema.shape as any)
     .map(([k, v]) => [k, (v instanceof z.ZodNullable ? v.unwrap() : v).optional()])) as {
       // eslint-disable-next-line no-use-before-define

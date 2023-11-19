@@ -4,7 +4,6 @@ import { eq } from "drizzle-orm"
 import { postDefaults, PostIdParams, PostCreatedByParams, PostModifiedByParams, CreatePostParams, ReplacePostParams, UpdatePostParams, QueryPostParams } from "@/lib/db/schemas/posts"
 import { posts } from "@/lib/db/tables/posts"
 import { parseFound, parseCreated, parseFoundFirst } from "@/lib/api/utils"
-import nanoid from "@/lib/db/nanoid"
 import { UserIdParams, UsernameParams } from "@/lib/db/schemas/users"
 
 export const findPosts = ({ page, sort, ...post }: QueryPostParams = {}) => db.query.posts
@@ -17,7 +16,7 @@ export const findPostsCreatedByUsername = ({ username }: UsernameParams) => db.q
   .findFirst({ with: { posts: true }, where: (users, { eq }) => eq(users.username, username) })
   .execute().then(parseFound).then(x => x.posts)
 export const createPost = (post: CreatePostParams & PostCreatedByParams) => db.insert(posts)
-  .values({ ...post, id: nanoid(), modifiedBy: post.createdBy }).returning().execute().then(parseCreated)
+  .values({ ...post, modifiedBy: post.createdBy }).returning().execute().then(parseCreated)
 export const replacePost = ({ id, ...post }: ReplacePostParams & PostModifiedByParams) => db.update(posts)
   .set({ ...postDefaults, ...post, modifiedAt: new Date() }).where(eq(posts.id, id)).returning().execute().then(parseFoundFirst)
 export const updatePost = ({ id, ...post }: UpdatePostParams & PostModifiedByParams) => db.update(posts)
