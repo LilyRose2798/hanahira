@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { PostForm } from "@/components/posts/PostForm"
+// import { PostForm } from "@/components/posts/PostForm"
 import { Post } from "@/lib/db/schemas/posts"
 
 export const PostModal = ({ post, emptyState }: {
@@ -10,7 +10,7 @@ export const PostModal = ({ post, emptyState }: {
   emptyState?: boolean
 }) => {
   const [open, setOpen] = useState(false)
-  const closeModal = () => setOpen(false)
+  // const closeModal = () => setOpen(false)
   const editing = !!post?.id
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -43,7 +43,7 @@ export const PostModal = ({ post, emptyState }: {
           <DialogTitle>{editing ? "Edit" : "Create"} Post</DialogTitle>
         </DialogHeader>
         <div className="px-5 pb-5">
-          <PostForm closeModal={closeModal} post={post} />
+          {/* <PostForm closeModal={closeModal} post={post} /> */}
         </div>
       </DialogContent>
     </Dialog>

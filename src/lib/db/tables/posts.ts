@@ -8,7 +8,7 @@ import { relations } from "drizzle-orm"
 
 export const posts = pgTable("post", {
   ...idColumn,
-  uploadId: text("upload_id").references(() => uploads.id),
+  uploadId: text("upload_id").notNull().references(() => uploads.id),
   description: text("description"),
   sourceUrl: text("source_url"),
   rating: postRatingEnum("rating").notNull(),

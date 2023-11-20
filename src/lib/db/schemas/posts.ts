@@ -19,7 +19,7 @@ export const {
   defaults: postDefaults,
 } = tableSchemas<PostsTable>("post")({
   id: z.string().openapi({ description: "The post's ID", example: "jyfW7MDalrr" }),
-  uploadId: z.string().nullable().openapi({ description: "The ID of the upload associated with the post", example: "jyfW7MDalrr" }),
+  uploadId: z.string().openapi({ description: "The ID of the upload associated with the post", example: "jyfW7MDalrr" }),
   description: z.string().min(1).max(65536).openapi({ description: "The post's description", example: "A cute picture of Oshino Shinobu lying on a donut pillow." }).nullable(),
   sourceUrl: z.string().url().openapi({ description: "The post's source URL", example: "https://www.pixiv.net/en/artworks/98552071" }).nullable(),
   rating: z.enum(postRatings).openapi({ description: "The post's rating", example: "SAFE" }),

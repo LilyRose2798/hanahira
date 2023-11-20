@@ -11,10 +11,11 @@ import { Post, postSchema } from "@/lib/db/schemas/posts"
 import { preprocessEmptyString } from "@/lib/db/schemas/utils"
 import { z } from "zod"
 import { postRatingName, postRatings } from "@/lib/db/enums/postRating"
+import { Upload } from "@/lib/db/schemas/uploads"
 
-export const PostForm = ({ post, closeModal }: { post?: Post, closeModal: () => void }) => {
+export const PostForm = ({ closeModal, ...props }: { post: Post, closeModal: () => void } | { upload: Upload, closeModal: () => void }) => {
   const { toast, onError } = useToast()
-  const editing = !!post?.id
+  const editing = "post" in props
   const router = useRouter()
   const utils = trpc.useUtils()
   const schema = z.object({
@@ -25,9 +26,9 @@ export const PostForm = ({ post, closeModal }: { post?: Post, closeModal: () => 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      description: post?.description ?? "",
-      sourceUrl: post?.sourceUrl ?? "",
-      rating: post?.rating,
+      description: editing ? props.post.description : "",
+      sourceUrl: editing ? props.post.sourceUrl : "",
+      rating: editing ? props.post.rating : undefined,
     },
   })
 
@@ -44,7 +45,7 @@ export const PostForm = ({ post, closeModal }: { post?: Post, closeModal: () => 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(p => (editing ? updatePost({ ...p, id: post.id }) : createPost(p)))} className={"space-y-8"}>
+      <form onSubmit={form.handleSubmit(p => (editing ? updatePost({ ...p, id: props.post.id }) : createPost({ ...p, uploadId: props.upload.id })))} className={"space-y-8"}>
         <FormField control={form.control} name="description" render={({ field }) => (
           <FormItem>
             <FormLabel>Description</FormLabel>
@@ -88,7 +89,7 @@ export const PostForm = ({ post, closeModal }: { post?: Post, closeModal: () => 
           {editing ? `Sav${isUpdating ? "ing..." : "e"}` : `Creat${isCreating ? "ing..." : "e"}`}
         </Button>
         {editing ? (
-          <Button type="button" variant={"destructive"} onClick={() => deletePost(post)}>
+          <Button type="button" variant={"destructive"} onClick={() => deletePost(props.post)}>
             Delet{isDeleting ? "ing..." : "e"}
           </Button>
         ) : null}
