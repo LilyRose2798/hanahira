@@ -3,7 +3,7 @@ import { pgTable, text } from "drizzle-orm/pg-core"
 import { sessions } from "@/lib/db/tables/sessions"
 import { uploads } from "@/lib/db/tables/uploads"
 import { tagAliases, tagImplications, tags } from "@/lib/db/tables/tags"
-import { postCommentRatings, postComments, postFavourites, postParents, postRatings, postTags, posts } from "@/lib/db/tables/posts"
+import { postCommentVotes, postComments, postFavourites, postParents, postVotes, postTags, posts } from "@/lib/db/tables/posts"
 import { poolPosts, pools } from "@/lib/db/tables/pools"
 import { artistAliases, artistLinks, artists } from "@/lib/db/tables/artists"
 import { userRoleEnum } from "@/lib/db/tables/enums"
@@ -25,14 +25,14 @@ export const userRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   createdUploads: many(uploads, { relationName: "creator" }),
   updatedUploads: many(uploads, { relationName: "updater" }),
-  createdPostRatings: many(postRatings, { relationName: "creator" }),
-  updatedPostRatings: many(postRatings, { relationName: "updater" }),
+  createdPostVotes: many(postVotes, { relationName: "creator" }),
+  updatedPostVotes: many(postVotes, { relationName: "updater" }),
   createdPostFavourites: many(postFavourites, { relationName: "creator" }),
   updatedPostFavourites: many(postFavourites, { relationName: "updater" }),
   createdPostComments: many(postComments, { relationName: "creator" }),
   updatedPostComments: many(postComments, { relationName: "updater" }),
-  createdPostCommentRatings: many(postCommentRatings, { relationName: "creator" }),
-  updatedPostCommentRatings: many(postCommentRatings, { relationName: "updater" }),
+  createdPostCommentVotes: many(postCommentVotes, { relationName: "creator" }),
+  updatedPostCommentVotes: many(postCommentVotes, { relationName: "updater" }),
   createdTags: many(tags, { relationName: "creator" }),
   updatedTags: many(tags, { relationName: "updater" }),
   createdTagAliases: many(tagAliases, { relationName: "creator" }),

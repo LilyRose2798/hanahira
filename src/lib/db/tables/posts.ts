@@ -31,33 +31,33 @@ export const postTags = pgTable("post_tag", {
 }, table => ({ pk: primaryKey({ columns: [table.postId, table.tagId] }) }))
 export type PostTagsTable = typeof postTags
 
-export const postRatings = pgTable("post_rating", {
-  postId: text("post_id").references(() => posts.id).notNull(),
-  positive: boolean("postitive").notNull().default(true),
+export const postVotes = pgTable("post_vote", {
+  postId: text("post_id").notNull().references(() => posts.id),
+  upvote: boolean("upvote").notNull().default(true),
   ...metaColumns,
 }, table => ({ pk: primaryKey({ columns: [table.postId, table.createdBy] }) }))
-export type PostRatingsTable = typeof postRatings
+export type PostVotesTable = typeof postVotes
 
 export const postFavourites = pgTable("post_favourite", {
-  postId: text("post_id").references(() => posts.id).notNull(),
+  postId: text("post_id").notNull().references(() => posts.id),
   ...metaColumns,
 }, table => ({ pk: primaryKey({ columns: [table.postId, table.createdBy] }) }))
 export type PostFavouritesTable = typeof postFavourites
 
 export const postComments = pgTable("post_comment", {
   ...idColumn,
-  postId: text("post_id").references(() => posts.id).notNull(),
+  postId: text("post_id").notNull().references(() => posts.id),
   comment: text("comment").notNull(),
   ...metaColumns,
 })
 export type PostCommentsTable = typeof postComments
 
-export const postCommentRatings = pgTable("post_comment_rating", {
-  postCommentId: text("comment_id").references(() => postComments.id).notNull(),
-  positive: boolean("postitive").notNull().default(true),
+export const postCommentVotes = pgTable("post_comment_vote", {
+  postCommentId: text("comment_id").notNull().references(() => postComments.id),
+  upvote: boolean("upvote").notNull().default(true),
   ...metaColumns,
 }, table => ({ pk: primaryKey({ columns: [table.postCommentId, table.createdBy] }) }))
-export type PostCommentRatingsTable = typeof postCommentRatings
+export type PostCommentVotesTable = typeof postCommentVotes
 
 export const postParentRelations = relations(postParents, ({ one }) => ({
   post: one(posts, { fields: [postParents.postId], references: [posts.id], relationName: "post" }),
@@ -71,9 +71,9 @@ export const postTagRelations = relations(postTags, ({ one }) => ({
   ...userMetaRelations(postTags)({ one }),
 }))
 
-export const postRatingRelations = relations(postRatings, ({ one }) => ({
-  post: one(posts, { fields: [postRatings.postId], references: [posts.id] }),
-  ...userMetaRelations(postRatings)({ one }),
+export const postVoteRelations = relations(postVotes, ({ one }) => ({
+  post: one(posts, { fields: [postVotes.postId], references: [posts.id] }),
+  ...userMetaRelations(postVotes)({ one }),
 }))
 
 export const postFavouriteRelations = relations(postFavourites, ({ one }) => ({
@@ -83,13 +83,13 @@ export const postFavouriteRelations = relations(postFavourites, ({ one }) => ({
 
 export const postCommentRelations = relations(postComments, ({ one, many }) => ({
   post: one(posts, { fields: [postComments.postId], references: [posts.id] }),
-  ratings: many(postCommentRatings),
+  votes: many(postCommentVotes),
   ...userMetaRelations(postComments)({ one }),
 }))
 
-export const postCommentRatingRelations = relations(postCommentRatings, ({ one }) => ({
-  comment: one(postComments, { fields: [postCommentRatings.postCommentId], references: [postComments.id] }),
-  ...userMetaRelations(postCommentRatings)({ one }),
+export const postCommentVoteRelations = relations(postCommentVotes, ({ one }) => ({
+  comment: one(postComments, { fields: [postCommentVotes.postCommentId], references: [postComments.id] }),
+  ...userMetaRelations(postCommentVotes)({ one }),
 }))
 
 export const postRelations = relations(posts, ({ one, many }) => ({
@@ -98,7 +98,7 @@ export const postRelations = relations(posts, ({ one, many }) => ({
   parentOfPosts: many(postParents, { relationName: "parentPost" }),
   tags: many(postTags),
   pools: many(poolPosts),
-  ratings: many(postRatings),
+  votes: many(postVotes),
   favourites: many(postFavourites),
   comments: many(postComments),
   ...userMetaRelations(posts)({ one }),

@@ -2,8 +2,8 @@ import { userRoleEnum, postRatingEnum, postStatusEnum } from "@/lib/db/tables/en
 import { sessions, sessionUserRelations } from "@/lib/db/tables/sessions"
 import { users, userRelations } from "@/lib/db/tables/users"
 import { uploads, uploadRelations } from "@/lib/db/tables/uploads"
-import { tags, tagAliases, tagRelations } from "@/lib/db/tables/tags"
-import { posts, postParents, postTags, postRatings, postFavourites, postComments, postCommentRatings, postParentRelations, postTagRelations, postRatingRelations, postFavouriteRelations, postCommentRelations, postCommentRatingRelations, postRelations } from "@/lib/db/tables/posts"
+import { tags, tagTypes, tagAliases, tagImplications, tagTypeRelations, tagAliasRelations, tagImplicationRelations, tagRelations } from "@/lib/db/tables/tags"
+import { posts, postParents, postTags, postVotes, postFavourites, postComments, postCommentVotes, postParentRelations, postTagRelations, postVoteRelations, postFavouriteRelations, postCommentRelations, postCommentVoteRelations, postRelations } from "@/lib/db/tables/posts"
 import { pools, poolPosts, poolPostRelations, poolRelations } from "@/lib/db/tables/pools"
 import { artists, artistAliases, artistLinks, artistAliasesRelations, artistLinksRelations, artistRelations } from "@/lib/db/tables/artists"
 
@@ -18,21 +18,26 @@ export {
   uploads,
   uploadRelations,
   tags,
+  tagTypes,
   tagAliases,
+  tagImplications,
+  tagTypeRelations,
+  tagAliasRelations,
+  tagImplicationRelations,
   tagRelations,
   posts,
   postParents,
   postTags,
-  postRatings,
+  postVotes,
   postFavourites,
   postComments,
-  postCommentRatings,
+  postCommentVotes,
   postParentRelations,
   postTagRelations,
-  postRatingRelations,
+  postVoteRelations,
   postFavouriteRelations,
   postCommentRelations,
-  postCommentRatingRelations,
+  postCommentVoteRelations,
   postRelations,
   pools,
   poolPosts,

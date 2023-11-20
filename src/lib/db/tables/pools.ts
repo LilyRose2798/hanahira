@@ -5,7 +5,7 @@ import { relations } from "drizzle-orm"
 
 export const pools = pgTable("pool", {
   ...idColumn,
-  name: text("name"),
+  name: text("name").notNull(),
   description: text("description"),
   originalTitle: text("original_title"),
   sourceUrl: text("source_url"),
