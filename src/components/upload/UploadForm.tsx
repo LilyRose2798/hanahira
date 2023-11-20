@@ -15,7 +15,7 @@ export const UploadForm = ({ uploadComplete }: { uploadComplete: (fileIds: Uploa
     mutationFn: async ({ files }: { files: File[] }) => {
       const formData = new FormData()
       files.forEach(file => formData.append("files", file))
-      return fetch("/api/upload", {
+      return fetch("/api/uploads", {
         method: "POST",
         body: formData,
       })

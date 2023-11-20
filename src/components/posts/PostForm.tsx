@@ -102,11 +102,11 @@ export const PostForm = ({ upload, post, submitRef, postCreated, postUpdated, po
           </FormItem>
         )}/>
         <Button ref={submitRef} type="submit" className="mr-1" disabled={isCreating || isUpdating}>
-          {editing ? `Updat${isUpdating ? "ing..." : "e"}` : `Creat${isCreating ? "ing..." : "e"}`}
+          {editing ? `Updat${isUpdating ? "ing Post..." : "e Post"}` : `Creat${isCreating ? "ing Post..." : "e Post"}`}
         </Button>
         {editing ? (
           <Button type="button" variant="destructive" onClick={() => deletePost(post)} disabled={isDeleting}>
-            Delet{isDeleting ? "ing..." : "e"}
+            Delet{isDeleting ? "ing Post..." : "e Post"}
           </Button>
         ) : null}
       </form>

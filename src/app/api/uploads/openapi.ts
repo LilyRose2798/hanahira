@@ -1,7 +1,7 @@
 import { ZodOpenApiPathsObject } from "zod-openapi"
 
 export const openApiUploadPath: ZodOpenApiPathsObject = {
-  "/upload": {
+  "/uploads": {
     post: {
       summary: "Upload files",
       description: "Upload files",

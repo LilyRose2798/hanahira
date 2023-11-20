@@ -2,7 +2,7 @@ import { generateOpenApiDocument } from "@lilyrose2798/trpc-openapi"
 import { cache } from "react"
 import { OpenAPIObject } from "openapi3-ts/oas31"
 import { appRouter } from "@/lib/trpc/routers"
-import { openApiUploadPath } from "@/app/api/upload/openapi"
+import { openApiUploadPath } from "@/app/api/uploads/openapi"
 
 export const getOpenApiDocument = cache(async (): Promise<OpenAPIObject> => generateOpenApiDocument(appRouter, {
   title: "Hanahira API",
