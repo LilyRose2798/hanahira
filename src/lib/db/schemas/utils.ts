@@ -84,8 +84,8 @@ export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name:
 >(schemaShape: EnhancedOmit<BuildSelectSchema<T, {}>, keyof TimestampMetaColumns>,
     defaultMask: DefaultMask<T>, publicMask?: PublicMask) => {
   const title = titleCase(name)
-  const createdAt = z.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) })
-  const updatedAt = z.date().openapi({ description: `The date the ${name} was last updated`, example: new Date(0) })
+  const createdAt = z.coerce.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) })
+  const updatedAt = z.coerce.date().openapi({ description: `The date the ${name} was last updated`, example: new Date(0) })
   const schema = z.object({ ...schemaShape, createdAt, updatedAt }).openapi({ ref: title, title, description: `The data for a ${name}` })
   const publicSchema = optPick(schema.shape, publicMask)
   publicSchema._def.openapi = { title, description: `The public data for a ${name}` }

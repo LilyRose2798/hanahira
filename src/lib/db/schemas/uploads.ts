@@ -17,7 +17,7 @@ export const {
   defaults: uploadDefaults,
 } = tableSchemas<UploadsTable>("post")({
   id: z.string().openapi({ description: "The upload's ID", example: "jyfW7MDalrr" }),
-  url: z.string().url().openapi({ description: "The upload's URL" }),
+  location: z.string().openapi({ description: "The upload's location" }),
   originalName: z.string().openapi({ description: "The upload's original file name", example: "shinobu.jpg" }),
   originalExtension: z.string().nullable().openapi({ description: "The upload's original file extension", example: "jpg" }),
   originalMime: z.string().nullable().openapi({ description: "The upload's original mime type", example: "image/jpeg" }),

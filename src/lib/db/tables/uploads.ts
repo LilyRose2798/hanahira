@@ -5,7 +5,7 @@ import { relations } from "drizzle-orm"
 
 export const uploads = pgTable("upload", {
   ...idColumn,
-  url: text("url").notNull(),
+  location: text("location").notNull(),
   originalName: text("original_name").notNull(),
   originalExtension: text("original_extension"),
   originalMime: text("original_mime"),

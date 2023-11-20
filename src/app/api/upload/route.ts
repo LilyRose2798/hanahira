@@ -41,25 +41,23 @@ export const POST = async (req: NextRequest) => {
     const { user } = await validateAuth()
     if (!user) return NextResponse.json({ code: "UNAUTHORIZED", message: "Not signed in" }, { status: 401 })
     const createdBy = user.id
-    const nextUrl = req.nextUrl.clone()
     const formData = await req.formData()
     const filesRes = fileListSchema.safeParse(formData.getAll("files"))
     if (!filesRes.success) return NextResponse.json({ code: "BAD_REQUEST", message: filesRes.error.issues.map(x => x.message).join(", ") }, { status: 400 })
     return NextResponse.json(await Promise.all(filesRes.data.map(async file => {
-      const filename = nanoid(20)
-      nextUrl.pathname = join("/uploads", filename)
-      const url = nextUrl.toString()
-      const { size, name: originalName, type: originalMime, arrayBuffer } = file
+      const { size, name: originalName, type: originalMime } = file
       const originalExtension = extname(originalName).substring(1) || undefined
-      const buffer = Buffer.from(await arrayBuffer())
+      const buffer = Buffer.from(await file.arrayBuffer())
       const { ext: detectedExtension, mime: detectedMime } = await fileTypeFromBuffer(buffer) ?? {}
+      const filenameId = nanoid(20)
+      const filename = detectedExtension ? `${filenameId}.${detectedExtension}` : filenameId
+      const location = `/uploads/${filename}`
       const md5Hash = createMD5Hash(buffer)
       const sha256Hash = createSHA256Hash(buffer)
       const sha512Hash = createSHA512Hash(buffer)
       const blockHash = await createBlockHash(buffer, detectedExtension)
-      const fp = writeFile(join(cwd(), "public/uploads", filename), buffer)
       const upload = await createUpload({
-        url,
+        location,
         originalName,
         originalExtension,
         originalMime,
@@ -72,7 +70,7 @@ export const POST = async (req: NextRequest) => {
         size,
         createdBy,
       })
-      await fp
+      await writeFile(join(cwd(), "public/uploads", filename), buffer)
       return upload
     })))
   } catch (e) {
