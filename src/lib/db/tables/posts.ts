@@ -1,12 +1,14 @@
 import { boolean, pgTable, primaryKey, text } from "drizzle-orm/pg-core"
 import { postRatingEnum, postStatusEnum } from "@/lib/db/tables/enums"
 import { idColumn, metaColumns, userMetaRelations } from "@/lib/db/tables/utils"
+import { uploads } from "@/lib/db/tables/uploads"
 import { tags } from "@/lib/db/tables/tags"
 import { poolPosts } from "@/lib/db/tables/pools"
 import { relations } from "drizzle-orm"
 
 export const posts = pgTable("post", {
   ...idColumn,
+  uploadId: text("upload_id").references(() => uploads.id),
   description: text("description"),
   sourceUrl: text("source_url"),
   rating: postRatingEnum("rating").notNull(),
@@ -91,6 +93,7 @@ export const postCommentRatingRelations = relations(postCommentRatings, ({ one }
 }))
 
 export const postRelations = relations(posts, ({ one, many }) => ({
+  upload: one(uploads, { fields: [posts.uploadId], references: [uploads.id] }),
   parentPost: one(postParents, { fields: [posts.id], references: [postParents.postId], relationName: "parent" }),
   parentOfPosts: many(postParents, { relationName: "parentPost" }),
   tags: many(postTags),

@@ -1,6 +1,7 @@
 import { userRoleEnum, postRatingEnum, postStatusEnum } from "@/lib/db/tables/enums"
 import { sessions, sessionUserRelations } from "@/lib/db/tables/sessions"
 import { users, userRelations } from "@/lib/db/tables/users"
+import { uploads, uploadRelations } from "@/lib/db/tables/uploads"
 import { tags, tagAliases, tagRelations } from "@/lib/db/tables/tags"
 import { posts, postParents, postTags, postRatings, postFavourites, postComments, postCommentRatings, postParentRelations, postTagRelations, postRatingRelations, postFavouriteRelations, postCommentRelations, postCommentRatingRelations, postRelations } from "@/lib/db/tables/posts"
 import { pools, poolPosts, poolPostRelations, poolRelations } from "@/lib/db/tables/pools"
@@ -10,10 +11,12 @@ export {
   userRoleEnum,
   postRatingEnum,
   postStatusEnum,
-  users,
-  userRelations,
   sessions,
   sessionUserRelations,
+  users,
+  userRelations,
+  uploads,
+  uploadRelations,
   tags,
   tagAliases,
   tagRelations,
