@@ -7,8 +7,9 @@ import { useToast } from "@/components/ui/use-toast"
 import { useMutation } from "@tanstack/react-query"
 import { z } from "zod"
 import { fileListSchema } from "@/lib/db/schemas/utils"
+import { Upload, uploadSchema } from "@/lib/db/schemas/uploads"
 
-export const UploadForm = ({ uploadComplete }: { uploadComplete: (fileIds: string[]) => void }) => {
+export const UploadForm = ({ uploadComplete }: { uploadComplete: (fileIds: Upload[]) => void }) => {
   const { toast, onError } = useToast()
   const { mutate, isLoading } = useMutation({
     mutationFn: async ({ files }: { files: File[] }) => {
@@ -22,8 +23,9 @@ export const UploadForm = ({ uploadComplete }: { uploadComplete: (fileIds: strin
     onSuccess: async res => {
       const data = await res.json()
       if (res.status !== 200) throw new Error(String(data.message ?? "Unknown error occurred"))
-      toast({ title: "Success", description: `File(s) successfully uploaded: ${data}` })
-      uploadComplete(data)
+      const uploads = uploadSchema.array().parse(data)
+      toast({ title: "Success", description: "File(s) successfully uploaded" })
+      uploadComplete(uploads)
     },
     onError: err => (err instanceof Error ? onError(err) : onError({ message: "Unknown error occurred" })),
   })
