@@ -13,11 +13,9 @@ import { postRatingName, postRatings } from "@/lib/db/enums/postRating"
 import { Upload } from "@/lib/db/schemas/uploads"
 import { Ref } from "react"
 
-export const PostForm = ({ upload, post, submitRef, postCreated, postUpdated, postDeleted }: {
+export const PostForm = ({ upload, post, submitRef, setPost }: {
   upload: Upload, post?: Post, submitRef?: Ref<HTMLButtonElement>,
-  postCreated: (post: Post) => void,
-  postUpdated: (post: Post) => void,
-  postDeleted: (post: Post) => void
+  setPost?: (post: Post | undefined) => void,
 }) => {
   const { toast, onError } = useToast()
   const editing = !!post?.id
@@ -40,7 +38,7 @@ export const PostForm = ({ upload, post, submitRef, postCreated, postUpdated, po
     onSuccess: post => {
       utils.posts.query.invalidate()
       toast({ title: "Success", description: "Post created!" })
-      postCreated(post)
+      setPost?.(post)
     },
     onError,
   })
@@ -48,15 +46,15 @@ export const PostForm = ({ upload, post, submitRef, postCreated, postUpdated, po
     onSuccess: post => {
       utils.posts.query.invalidate()
       toast({ title: "Success", description: "Post updated!" })
-      postUpdated(post)
+      setPost?.(post)
     },
     onError,
   })
   const { mutate: deletePost, isLoading: isDeleting } = trpc.posts.delete.useMutation({
-    onSuccess: post => {
+    onSuccess: _ => {
       utils.posts.query.invalidate()
       toast({ title: "Success", description: "Post deleted!" })
-      postDeleted(post)
+      setPost?.(undefined)
     },
     onError,
   })

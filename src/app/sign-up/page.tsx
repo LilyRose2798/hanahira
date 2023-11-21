@@ -11,7 +11,7 @@ const SignUp = async () => {
   if (session) redirect("/")
   return (
     <section className="container max-w-lg mx-auto my-4 bg-secondary p-10">
-      <h1 className="text-2xl font-bold text-center">Create an account</h1>
+      <h1 className="text-2xl font-semibold text-center">Create an account</h1>
       <AuthForm isSignUp />
       <div className="mt-4 text-muted-foreground text-center text-sm">
         Already have an account?{" "}

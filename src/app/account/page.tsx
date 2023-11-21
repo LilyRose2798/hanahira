@@ -10,7 +10,7 @@ const Account = async () => {
   if (!session) redirect("/sign-in")
   return (
     <section className="container">
-      <h1 className="text-2xl font-bold my-6">Account</h1>
+      <h1 className="text-2xl font-semibold my-6">Account</h1>
       <div className="space-y-6">
         <UserSettings user={user} />
       </div>

@@ -8,9 +8,10 @@ export const metadata: Metadata = { title: "New Post" }
 const NewPost = async () => {
   const { session } = await validateAuth()
   if (!session) redirect("/sign-in")
+  // have query param for upload ids to use
   return (
-    <section className="container mt-6">
-      <h1 className="font-semibold text-2xl my-2">New Post</h1>
+    <section className="container">
+      <h1 className="font-semibold text-2xl my-6">New Post</h1>
       <NewPostForm />
     </section>
   )

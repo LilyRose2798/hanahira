@@ -2,15 +2,7 @@
 import { Post } from "@/lib/db/schemas/posts"
 import { trpc } from "@/lib/trpc/client"
 import PostModal from "@/components/posts/PostModal"
-
-const Post = ({ post, canEdit = true }: { post: Post, canEdit?: boolean }) => (
-  <li className="flex justify-between my-2">
-    <div className="w-full">
-      <div>{post.description}</div>
-    </div>
-    {canEdit && <PostModal post={post} />}
-  </li>
-)
+import PostComp from "./Post"
 
 const EmptyState = ({ canEdit = true }: { canEdit?: boolean }) => (
   <div className="text-center">
@@ -31,7 +23,7 @@ const EmptyState = ({ canEdit = true }: { canEdit?: boolean }) => (
 export const PostList = ({ posts, canEdit = true }: { posts: Post[], canEdit?: boolean }) => {
   const { data } = trpc.posts.query.many.useQuery({}, { initialData: posts, refetchOnMount: false })
   if (data.length === 0) return <EmptyState canEdit={canEdit} />
-  return <ul>{data.toReversed().map(post => <Post post={post} canEdit={canEdit} key={post.id} />)}</ul>
+  return <ul>{data.toReversed().map(post => <PostComp post={post} key={post.id} />)}</ul>
 }
 
 export default PostList
