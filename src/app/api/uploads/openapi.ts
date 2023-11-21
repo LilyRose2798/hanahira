@@ -1,3 +1,5 @@
+import { uploadSchema } from "@/lib/db/schemas/uploads"
+import { errorResponseFromMessage, errorResponseFromStatusCode } from "@lilyrose2798/trpc-openapi"
 import { ZodOpenApiPathsObject } from "zod-openapi"
 
 export const openApiUploadPath: ZodOpenApiPathsObject = {
@@ -5,7 +7,7 @@ export const openApiUploadPath: ZodOpenApiPathsObject = {
     post: {
       summary: "Upload files",
       description: "Upload files",
-      tags: ["Upload"],
+      tags: ["Uploads"],
       security: [{ "Bearer Authorization": [] }, { "Cookie Authorization": [] }],
       requestBody: {
         required: true,
@@ -35,87 +37,12 @@ export const openApiUploadPath: ZodOpenApiPathsObject = {
           description: "Files saved successfully",
           content: {
             "application/json": {
-              schema: {
-                title: "File IDs",
-                description: "The IDs of the uploaded files",
-                type: "array",
-                items: {
-                  type: "string",
-                  description: "A file ID",
-                  example: "EGSzbSc08HBB",
-                },
-              },
+              schema: uploadSchema.array(),
             },
           },
         },
-        400: {
-          description: "Invalid file data provided",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                title: "Error",
-                description: "The error information",
-                properties: {
-                  message: {
-                    type: "string",
-                    description: "The error message",
-                    example: "Invalid file provided",
-                  },
-                  code: {
-                    type: "string",
-                    description: "The error code",
-                    example: "BAD_REQUEST",
-                  },
-                  issues: {
-                    type: "array",
-                    description: "An array of issues that were responsible for the error",
-                    example: [],
-                    items: {
-                      type: "string",
-                    },
-                  },
-                },
-                required: ["code", "message"],
-                example: { code: "BAD_REQUEST", message: "Invalid file provided", issues: [] },
-              },
-            },
-          },
-        },
-        500: {
-          description: "Unexpected server error",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                title: "Error",
-                description: "The error information",
-                properties: {
-                  message: {
-                    type: "string",
-                    description: "The error message",
-                    example: "Error saving files",
-                  },
-                  code: {
-                    type: "string",
-                    description: "The error code",
-                    example: "INTERNAL_SERVER_ERROR",
-                  },
-                  issues: {
-                    type: "array",
-                    description: "An array of issues that were responsible for the error",
-                    example: [],
-                    items: {
-                      type: "string",
-                    },
-                  },
-                },
-                required: ["code", "message"],
-                example: { code: "INTERNAL_SERVER_ERROR", message: "Unexpected server error", issues: [] },
-              },
-            },
-          },
-        },
+        400: errorResponseFromMessage(400, "Invalid file data provided"),
+        500: errorResponseFromStatusCode(500),
       },
     },
   },

@@ -15,7 +15,7 @@ export const {
   replaceSchema: replaceUploadSchema,
   updateSchema: updateUploadSchema,
   defaults: uploadDefaults,
-} = tableSchemas<UploadsTable>("post")({
+} = tableSchemas<UploadsTable>("upload")({
   id: z.string().openapi({ description: "The upload's ID", example: "jyfW7MDalrr" }),
   location: z.string().openapi({ description: "The upload's location" }),
   originalName: z.string().openapi({ description: "The upload's original file name", example: "shinobu.jpg" }),

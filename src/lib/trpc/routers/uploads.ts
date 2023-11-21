@@ -83,7 +83,7 @@ export const uploadsRouter = r({
       updateUpload({ ...upload, updatedBy }))),
   delete: p
     .meta({ openapi: {
-      method: "POST",
+      method: "DELETE",
       path: "/uploads/{id}",
       tags: ["Uploads"],
       summary: "Delete an upload",

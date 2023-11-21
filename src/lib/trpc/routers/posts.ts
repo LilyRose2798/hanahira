@@ -107,7 +107,7 @@ export const postsRouter = r({
       updatePost({ ...post, updatedBy }))),
   delete: p
     .meta({ openapi: {
-      method: "POST",
+      method: "DELETE",
       path: "/posts/{id}",
       tags: ["Posts"],
       summary: "Delete a post",
