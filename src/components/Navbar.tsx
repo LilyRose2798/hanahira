@@ -29,10 +29,11 @@ export const Navbar = async () => {
                 <span className="font-semibold">{(user.name ?? user.username)}</span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <Link href="/profile">
+                <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem>
+              </Link>
               <Link href="/account">
-                <DropdownMenuItem className="cursor-pointer">
-                    Account
-                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">Account</DropdownMenuItem>
               </Link>
               <DropdownMenuItem>
                 <SignOutBtn plain />
