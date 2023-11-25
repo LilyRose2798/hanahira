@@ -29,12 +29,6 @@ const decoders: Partial<Record<FileExtension, (buffer: Buffer) => DecodedData | 
     return { width, height, data }
   },
 }
-const createBlockHash = async (buffer: Buffer, extension?: FileExtension) => {
-  if (!extension) return null
-  const decoder = decoders[extension]
-  if (!decoder) return null
-  return bmvbhash(await decoder(buffer), 16)
-}
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -55,7 +49,10 @@ export const POST = async (req: NextRequest) => {
       const md5Hash = createMD5Hash(buffer)
       const sha256Hash = createSHA256Hash(buffer)
       const sha512Hash = createSHA512Hash(buffer)
-      const blockHash = await createBlockHash(buffer, detectedExtension)
+      const decoder = detectedExtension && decoders[detectedExtension]
+      const decodedData = await decoder?.(buffer)
+      const { width, height } = decodedData ?? {}
+      const blockHash = decodedData && bmvbhash(decodedData, 16)
       const upload = await createUpload({
         location,
         originalName,
@@ -67,6 +64,8 @@ export const POST = async (req: NextRequest) => {
         sha256Hash,
         sha512Hash,
         blockHash,
+        width,
+        height,
         size,
         createdBy,
       })
