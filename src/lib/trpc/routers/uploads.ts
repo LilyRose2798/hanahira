@@ -1,7 +1,9 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth } from "@/lib/trpc/middleware"
-import { findUploads, findUploadById, replaceUpload, updateUpload, deleteUpload } from "@/lib/api/uploads"
-import { uploadSchema, uploadIdSchema, queryUploadSchema, replaceUploadSchema, updateUploadSchema } from "@/lib/db/schemas/uploads"
+import { queryUploads, queryUploadById, replaceUpload, updateUpload, deleteUpload } from "@/lib/api/uploads"
+import { uploadSchema, partialUploadSchema, uploadIdSchema, queryUploadsSchema, queryUploadIdSchema, replaceUploadSchema, updateUploadSchema } from "@/lib/db/schemas/uploads"
+
+export const tags = ["Uploads"]
 
 export const uploadsRouter = r({
   query: r({
@@ -9,7 +11,7 @@ export const uploadsRouter = r({
       .meta({ openapi: {
         method: "GET",
         path: "/uploads",
-        tags: ["Uploads"],
+        tags,
         summary: "Query upload data",
         description: "Query the data of uploads",
         successDescription: "Upload data successfully returned",
@@ -18,14 +20,14 @@ export const uploadsRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .input(queryUploadSchema)
-      .output(uploadSchema.array())
-      .query(async ({ input: upload }) => findUploads(upload)),
+      .input(queryUploadsSchema)
+      .output(partialUploadSchema.array())
+      .query(async ({ input }) => queryUploads(input)),
     byId: p
       .meta({ openapi: {
         method: "GET",
         path: "/uploads/{id}",
-        tags: ["Uploads"],
+        tags,
         summary: "Query an upload's data",
         description: "Query the data of the upload with the specified ID",
         successDescription: "Upload data successfully returned",
@@ -35,15 +37,15 @@ export const uploadsRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .input(uploadIdSchema)
-      .output(uploadSchema)
-      .query(async ({ input: upload }) => findUploadById(upload)),
+      .input(queryUploadIdSchema)
+      .output(partialUploadSchema)
+      .query(async ({ input }) => queryUploadById(input)),
   }),
   replace: p
     .meta({ openapi: {
       method: "PUT",
       path: "/uploads/{id}",
-      tags: ["Uploads"],
+      tags,
       summary: "Replace an upload's data",
       description: "Replace the data of the upload with the specified ID",
       protect: true,
@@ -58,13 +60,13 @@ export const uploadsRouter = r({
     .use(hasAuth)
     .input(replaceUploadSchema)
     .output(uploadSchema)
-    .mutation(async ({ input: upload, ctx: { user: { id: updatedBy } } }) => (
-      replaceUpload({ ...upload, updatedBy }))),
+    .mutation(async ({ input, ctx: { user: { id: updatedBy } } }) => (
+      replaceUpload({ ...input, updatedBy }))),
   update: p
     .meta({ openapi: {
       method: "PATCH",
       path: "/uploads/{id}",
-      tags: ["Uploads"],
+      tags,
       summary: "Update an upload's data",
       description: "Update the data of the upload with the specified ID",
       protect: true,
@@ -79,13 +81,13 @@ export const uploadsRouter = r({
     .use(hasAuth)
     .input(updateUploadSchema)
     .output(uploadSchema)
-    .mutation(async ({ input: upload, ctx: { user: { id: updatedBy } } }) => (
-      updateUpload({ ...upload, updatedBy }))),
+    .mutation(async ({ input, ctx: { user: { id: updatedBy } } }) => (
+      updateUpload({ ...input, updatedBy }))),
   delete: p
     .meta({ openapi: {
       method: "DELETE",
       path: "/uploads/{id}",
-      tags: ["Uploads"],
+      tags,
       summary: "Delete an upload",
       description: "Delete the upload with the specified ID",
       protect: true,
@@ -100,5 +102,5 @@ export const uploadsRouter = r({
     .use(hasAuth)
     .input(uploadIdSchema)
     .output(uploadSchema)
-    .mutation(async ({ input: upload }) => deleteUpload(upload)),
+    .mutation(async ({ input }) => deleteUpload(input)),
 })

@@ -59,7 +59,6 @@
     "no-use-before-define": "error",
     "eqeqeq": "error",
     "no-case-declarations": "error",
-    "no-nested-ternary": "error",
     "no-unneeded-ternary": "error",
     "nonblock-statement-body-position": "error",
     "brace-style": "error",

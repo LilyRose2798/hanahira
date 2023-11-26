@@ -9,13 +9,15 @@ extendZodWithOpenApi(z)
 
 export const {
   schema: postSchema,
+  partialSchema: partialPostSchema,
   idSchema: postIdSchema,
-  createdBySchema: postCreatedBySchema,
-  updatedBySchema: postUpdatedBySchema,
-  querySchema: queryPostSchema,
+  queryIdSchema: queryPostIdSchema,
+  querySchema: queryPostsSchema,
   createSchema: createPostSchema,
   replaceSchema: replacePostSchema,
   updateSchema: updatePostSchema,
+  createdBySchema: postsCreatedBySchema,
+  updatedBySchema: postsUpdatedBySchema,
   defaults: postDefaults,
 } = tableSchemas<PostsTable>("post")({
   id: z.string().openapi({ description: "The post's ID", example: "jyfW7MDalrr" }),
@@ -27,10 +29,12 @@ export const {
 }, { status: true })
 
 export type Post = z.infer<typeof postSchema>
+export type PartialPost = z.infer<typeof partialPostSchema>
 export type PostIdParams = z.infer<typeof postIdSchema>
-export type PostCreatedByParams = z.infer<typeof postCreatedBySchema>
-export type PostUpdatedByParams = z.infer<typeof postUpdatedBySchema>
-export type QueryPostParams = z.infer<typeof queryPostSchema>
+export type QueryPostIdParams = z.infer<typeof queryPostIdSchema>
+export type QueryPostsParams = z.infer<typeof queryPostsSchema>
 export type CreatePostParams = z.infer<typeof createPostSchema>
 export type ReplacePostParams = z.infer<typeof replacePostSchema>
 export type UpdatePostParams = z.infer<typeof updatePostSchema>
+export type PostsCreatedByParams = z.infer<typeof postsCreatedBySchema>
+export type PostsUpdatedByParams = z.infer<typeof postsUpdatedBySchema>

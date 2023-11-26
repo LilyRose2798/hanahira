@@ -1,7 +1,9 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, canEditPost } from "@/lib/trpc/middleware"
-import { findPosts, findPostById, createPost, replacePost, updatePost, deletePost } from "@/lib/api/posts"
-import { postSchema, postIdSchema, queryPostSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schemas/posts"
+import { queryPosts, queryPostById, createPost, replacePost, updatePost, deletePost } from "@/lib/api/posts"
+import { postSchema, partialPostSchema, postIdSchema, queryPostIdSchema, queryPostsSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schemas/posts"
+
+export const tags = ["Posts"]
 
 export const postsRouter = r({
   query: r({
@@ -9,7 +11,7 @@ export const postsRouter = r({
       .meta({ openapi: {
         method: "GET",
         path: "/posts",
-        tags: ["Posts"],
+        tags,
         summary: "Query post data",
         description: "Query the data of posts",
         successDescription: "Post data successfully returned",
@@ -18,14 +20,14 @@ export const postsRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .input(queryPostSchema)
-      .output(postSchema.array())
-      .query(async ({ input: post }) => findPosts(post)),
+      .input(queryPostsSchema)
+      .output(partialPostSchema.array())
+      .query(async ({ input }) => queryPosts(input)),
     byId: p
       .meta({ openapi: {
         method: "GET",
         path: "/posts/{id}",
-        tags: ["Posts"],
+        tags,
         summary: "Query a post's data",
         description: "Query the data of the post with the specified ID",
         successDescription: "Post data successfully returned",
@@ -35,15 +37,15 @@ export const postsRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .input(postIdSchema)
-      .output(postSchema)
-      .query(async ({ input: post }) => findPostById(post)),
+      .input(queryPostIdSchema)
+      .output(partialPostSchema)
+      .query(async ({ input }) => queryPostById(input)),
   }),
   create: p
     .meta({ openapi: {
       method: "POST",
       path: "/posts",
-      tags: ["Posts"],
+      tags,
       summary: "Create a post",
       description: "Create a post with the specified data",
       protect: true,
@@ -57,13 +59,13 @@ export const postsRouter = r({
     .use(hasAuth)
     .input(createPostSchema)
     .output(postSchema)
-    .mutation(async ({ input: post, ctx: { user: { id: createdBy } } }) => (
-      createPost({ ...post, createdBy }))),
+    .mutation(async ({ input, ctx: { user: { id: createdBy } } }) => (
+      createPost({ ...input, createdBy }))),
   replace: p
     .meta({ openapi: {
       method: "PUT",
       path: "/posts/{id}",
-      tags: ["Posts"],
+      tags,
       summary: "Replace a post's data",
       description: "Replace the data of the post with the specified ID",
       protect: true,
@@ -80,13 +82,13 @@ export const postsRouter = r({
     .input(replacePostSchema)
     .use(canEditPost)
     .output(postSchema)
-    .mutation(async ({ input: post, ctx: { user: { id: updatedBy } } }) => (
-      replacePost({ ...post, updatedBy }))),
+    .mutation(async ({ input, ctx: { user: { id: updatedBy } } }) => (
+      replacePost({ ...input, updatedBy }))),
   update: p
     .meta({ openapi: {
       method: "PATCH",
       path: "/posts/{id}",
-      tags: ["Posts"],
+      tags,
       summary: "Update a post's data",
       description: "Update the data of the post with the specified ID",
       protect: true,
@@ -103,13 +105,13 @@ export const postsRouter = r({
     .input(updatePostSchema)
     .use(canEditPost)
     .output(postSchema)
-    .mutation(async ({ input: post, ctx: { user: { id: updatedBy } } }) => (
-      updatePost({ ...post, updatedBy }))),
+    .mutation(async ({ input, ctx: { user: { id: updatedBy } } }) => (
+      updatePost({ ...input, updatedBy }))),
   delete: p
     .meta({ openapi: {
       method: "DELETE",
       path: "/posts/{id}",
-      tags: ["Posts"],
+      tags,
       summary: "Delete a post",
       description: "Delete the post with the specified ID",
       protect: true,
@@ -126,5 +128,5 @@ export const postsRouter = r({
     .input(postIdSchema)
     .use(canEditPost)
     .output(postSchema)
-    .mutation(async ({ input: post }) => deletePost(post)),
+    .mutation(async ({ input }) => deletePost(input)),
 })

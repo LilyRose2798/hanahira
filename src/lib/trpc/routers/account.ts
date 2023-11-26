@@ -4,13 +4,20 @@ import { replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schema
 import { findUserById, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
 import { z } from "zod"
 import { invalidateAuthAndReturn } from "@/lib/lucia"
+import { partialUploadSchema } from "@/lib/db/schemas/uploads"
+import { baseQuerySchema } from "@/lib/db/schemas/utils"
+import { partialPostSchema } from "@/lib/db/schemas/posts"
+import { queryUploadsCreatedById } from "@/lib/api/uploads"
+import { queryPostsCreatedById } from "@/lib/api/posts"
+
+export const tags = ["Account"]
 
 export const accountRouter = r({
   query: p
     .meta({ openapi: {
       method: "GET",
       path: "/account",
-      tags: ["Account"],
+      tags,
       summary: "Query account data",
       description: "Query the user data for the currently signed in account",
       protect: true,
@@ -25,11 +32,49 @@ export const accountRouter = r({
     .input(z.void())
     .output(userSchema)
     .query(async ({ ctx: { user: { id } } }) => findUserById({ id })),
+  uploads: p
+    .meta({ openapi: {
+      method: "GET",
+      path: "/account/uploads",
+      tags,
+      summary: "Query account uploads",
+      description: "Query the data of the uploads created by the currently signed in account",
+      protect: true,
+      successDescription: "Upload data successfully returned",
+      errorResponses: {
+        400: "Invalid user ID",
+        401: "Not signed in",
+        500: "Unexpected server error",
+      },
+    } })
+    .use(hasAuth)
+    .input(baseQuerySchema)
+    .output(partialUploadSchema.array())
+    .query(async ({ input, ctx: { user: { id } } }) => queryUploadsCreatedById({ id, ...input })),
+  posts: p
+    .meta({ openapi: {
+      method: "GET",
+      path: "/account/posts",
+      tags,
+      summary: "Query account posts",
+      description: "Query the data of the posts created by the currently signed in account",
+      protect: true,
+      successDescription: "Post data successfully returned",
+      errorResponses: {
+        400: "Invalid user ID",
+        401: "Not signed in",
+        500: "Unexpected server error",
+      },
+    } })
+    .use(hasAuth)
+    .input(baseQuerySchema)
+    .output(partialPostSchema.array())
+    .query(async ({ input, ctx: { user: { id } } }) => queryPostsCreatedById({ id, ...input })),
   replace: p
     .meta({ openapi: {
       method: "PUT",
       path: "/account",
-      tags: ["Account"],
+      tags,
       summary: "Replace account data",
       description: "Replace the user data for the currently signed in account",
       protect: true,
@@ -44,13 +89,13 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(replaceUserSchema.omit({ id: true }))
     .output(userSchema)
-    .mutation(async ({ input: user, ctx: { user: { id } } }) => (
-      replaceUser({ id, ...user }).then(invalidateAuthAndReturn))),
+    .mutation(async ({ input, ctx: { user: { id } } }) => (
+      replaceUser({ id, ...input }).then(invalidateAuthAndReturn))),
   update: p
     .meta({ openapi: {
       method: "PATCH",
       path: "/account",
-      tags: ["Account"],
+      tags,
       summary: "Update account data",
       description: "Update the user data for the currently signed in account",
       protect: true,
@@ -65,13 +110,13 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(updateUserSchema.omit({ id: true }))
     .output(userSchema)
-    .mutation(async ({ input: user, ctx: { user: { id } } }) => (
-      updateUser({ id, ...user }).then(invalidateAuthAndReturn))),
+    .mutation(async ({ input, ctx: { user: { id } } }) => (
+      updateUser({ id, ...input }).then(invalidateAuthAndReturn))),
   delete: p
     .meta({ openapi: {
       method: "DELETE",
       path: "/account",
-      tags: ["Account"],
+      tags,
       summary: "Delete an account",
       description: "Delete the user for the currently signed in account",
       protect: true,

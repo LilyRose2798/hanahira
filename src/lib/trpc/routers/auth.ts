@@ -5,12 +5,14 @@ import { sessionSchema } from "@/lib/db/schemas/sessions"
 import { signIn, signUp, signOut } from "@/lib/api/auth"
 import { z } from "zod"
 
+export const tags = ["Auth"]
+
 export const authProcedures = {
   signIn: p
     .meta({ openapi: {
       method: "POST",
       path: "/sign-in",
-      tags: ["Auth"],
+      tags,
       summary: "Sign in to an account",
       description: "Sign in to an existing user account using a username and password",
       successDescription: "Signed in successfully",
@@ -21,12 +23,12 @@ export const authProcedures = {
     } })
     .input(signInSchema)
     .output(sessionSchema)
-    .mutation(async ({ input: creds }) => signIn(creds)),
+    .mutation(async ({ input }) => signIn(input)),
   signUp: p
     .meta({ openapi: {
       method: "POST",
       path: "/sign-up",
-      tags: ["Auth"],
+      tags,
       summary: "Sign up for an account",
       description: "Sign up for a new user account with a username and password",
       successDescription: "Signed up successfully",
@@ -38,12 +40,12 @@ export const authProcedures = {
     } })
     .input(signUpSchema)
     .output(sessionSchema)
-    .mutation(async ({ input: creds }) => signUp(creds)),
+    .mutation(async ({ input }) => signUp(input)),
   signOut: p
     .meta({ openapi: {
       method: "POST",
       path: "/sign-out",
-      tags: ["Auth"],
+      tags,
       summary: "Sign out of an account",
       description: "Sign out of the currently signed in user account",
       protect: true,
