@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
+import { Upload } from "@/lib/db/schemas/uploads"
 import { tableSchemas } from "@/lib/db/schemas/utils"
 import { PostsTable } from "@/lib/db/tables/posts"
 import { postRatings } from "@/lib/db/enums/postRating"
@@ -29,6 +30,7 @@ export const {
 }, { status: true })
 
 export type Post = z.infer<typeof postSchema>
+export type PostWithUpload = Post & { upload: Upload }
 export type PartialPost = z.infer<typeof partialPostSchema>
 export type PostIdParams = z.infer<typeof postIdSchema>
 export type QueryPostIdParams = z.infer<typeof queryPostIdSchema>

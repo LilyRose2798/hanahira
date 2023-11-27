@@ -1,11 +1,15 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, canEditPost } from "@/lib/trpc/middleware"
-import { queryPosts, queryPostById, createPost, replacePost, updatePost, deletePost } from "@/lib/api/posts"
+import { findPosts, queryPosts, queryPostById, createPost, replacePost, updatePost, deletePost, findPostById } from "@/lib/api/posts"
 import { postSchema, partialPostSchema, postIdSchema, queryPostIdSchema, queryPostsSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schemas/posts"
 
 export const tags = ["Posts"]
 
 export const postsRouter = r({
+  find: r({
+    manyWithUpload: p.query(async () => findPosts({ with: { upload: true } })),
+    byIdWithUpload: p.input(postIdSchema).query(async ({ input }) => findPostById({ ...input, with: { upload: true } })),
+  }),
   query: r({
     many: p
       .meta({ openapi: {

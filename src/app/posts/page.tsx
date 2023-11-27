@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Posts" }
 const Posts = async () => {
   const { session } = await validateAuth()
   const signedIn = !!session
-  const posts = await findPosts({})
+  const posts = await findPosts({ with: { upload: true } })
   return (
     <section className="container mt-6">
       <div className="flex justify-between">
