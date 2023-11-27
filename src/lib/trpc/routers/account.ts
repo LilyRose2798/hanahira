@@ -1,75 +1,82 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth } from "@/lib/trpc/middleware"
 import { replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schemas/users"
-import { findUserById, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
+import { findUserById, replaceUser, updateUser, deleteUser, queryUserById } from "@/lib/api/users"
 import { z } from "zod"
 import { invalidateAuthAndReturn } from "@/lib/lucia"
 import { partialUploadSchema } from "@/lib/db/schemas/uploads"
 import { baseQuerySchema } from "@/lib/db/schemas/utils"
 import { partialPostSchema } from "@/lib/db/schemas/posts"
-import { queryUploadsCreatedById } from "@/lib/api/uploads"
-import { queryPostsCreatedById } from "@/lib/api/posts"
+import { findUploadsCreatedById, queryUploadsCreatedById } from "@/lib/api/uploads"
+import { findPostsCreatedById, queryPostsCreatedById } from "@/lib/api/posts"
 
 export const tags = ["Account"]
 
 export const accountRouter = r({
-  query: p
-    .meta({ openapi: {
-      method: "GET",
-      path: "/account",
-      tags,
-      summary: "Query account data",
-      description: "Query the user data for the currently signed in account",
-      protect: true,
-      successDescription: "Account data successfully returned",
-      errorResponses: {
-        401: "Not signed in",
-        404: "Account not found",
-        500: "Unexpected server error",
-      },
-    } })
-    .use(hasAuth)
-    .input(z.void())
-    .output(userSchema)
-    .query(async ({ ctx: { user: { id } } }) => findUserById({ id })),
-  uploads: p
-    .meta({ openapi: {
-      method: "GET",
-      path: "/account/uploads",
-      tags,
-      summary: "Query account uploads",
-      description: "Query the data of the uploads created by the currently signed in account",
-      protect: true,
-      successDescription: "Upload data successfully returned",
-      errorResponses: {
-        400: "Invalid user ID",
-        401: "Not signed in",
-        500: "Unexpected server error",
-      },
-    } })
-    .use(hasAuth)
-    .input(baseQuerySchema)
-    .output(partialUploadSchema.array())
-    .query(async ({ input, ctx: { user: { id } } }) => queryUploadsCreatedById({ id, ...input })),
-  posts: p
-    .meta({ openapi: {
-      method: "GET",
-      path: "/account/posts",
-      tags,
-      summary: "Query account posts",
-      description: "Query the data of the posts created by the currently signed in account",
-      protect: true,
-      successDescription: "Post data successfully returned",
-      errorResponses: {
-        400: "Invalid user ID",
-        401: "Not signed in",
-        500: "Unexpected server error",
-      },
-    } })
-    .use(hasAuth)
-    .input(baseQuerySchema)
-    .output(partialPostSchema.array())
-    .query(async ({ input, ctx: { user: { id } } }) => queryPostsCreatedById({ id, ...input })),
+  find: r({
+    current: p.use(hasAuth).query(async ({ ctx: { user: { id } } }) => findUserById({ id })),
+    uploads: p.use(hasAuth).query(async ({ ctx: { user: { id } } }) => findUploadsCreatedById({ id })),
+    posts: p.use(hasAuth).query(async ({ ctx: { user: { id } } }) => findPostsCreatedById({ id })),
+  }),
+  query: r({
+    current: p
+      .meta({ openapi: {
+        method: "GET",
+        path: "/account",
+        tags,
+        summary: "Query account data",
+        description: "Query the user data for the currently signed in account",
+        protect: true,
+        successDescription: "Account data successfully returned",
+        errorResponses: {
+          401: "Not signed in",
+          404: "Account not found",
+          500: "Unexpected server error",
+        },
+      } })
+      .use(hasAuth)
+      .input(z.void())
+      .output(userSchema)
+      .query(async ({ ctx: { user: { id } } }) => queryUserById({ id })),
+    uploads: p
+      .meta({ openapi: {
+        method: "GET",
+        path: "/account/uploads",
+        tags,
+        summary: "Query account uploads",
+        description: "Query the data of the uploads created by the currently signed in account",
+        protect: true,
+        successDescription: "Upload data successfully returned",
+        errorResponses: {
+          400: "Invalid user ID",
+          401: "Not signed in",
+          500: "Unexpected server error",
+        },
+      } })
+      .use(hasAuth)
+      .input(baseQuerySchema)
+      .output(partialUploadSchema.array())
+      .query(async ({ input, ctx: { user: { id } } }) => queryUploadsCreatedById({ id, ...input })),
+    posts: p
+      .meta({ openapi: {
+        method: "GET",
+        path: "/account/posts",
+        tags,
+        summary: "Query account posts",
+        description: "Query the data of the posts created by the currently signed in account",
+        protect: true,
+        successDescription: "Post data successfully returned",
+        errorResponses: {
+          400: "Invalid user ID",
+          401: "Not signed in",
+          500: "Unexpected server error",
+        },
+      } })
+      .use(hasAuth)
+      .input(baseQuerySchema)
+      .output(partialPostSchema.array())
+      .query(async ({ input, ctx: { user: { id } } }) => queryPostsCreatedById({ id, ...input })),
+  }),
   replace: p
     .meta({ openapi: {
       method: "PUT",

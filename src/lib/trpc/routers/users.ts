@@ -3,14 +3,20 @@ import { hasAuth, hasRole, canEditUser } from "@/lib/trpc/middleware"
 import { invalidateAuthAndReturn } from "@/lib/lucia"
 import { userSchema, partialUserSchema, userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, queryUserSchema, queryUserIdSchema, queryCreatedByIdSchema } from "@/lib/db/schemas/users"
 import { partialPostSchema } from "@/lib/db/schemas/posts"
-import { queryUsers, queryUserById, createUser, replaceUser, updateUser, deleteUser } from "@/lib/api/users"
-import { queryPostsCreatedById } from "@/lib/api/posts"
+import { queryUsers, queryUserById, createUser, replaceUser, updateUser, deleteUser, findUsers, findUserById } from "@/lib/api/users"
+import { findPostsCreatedById, queryPostsCreatedById } from "@/lib/api/posts"
 import { partialUploadSchema } from "@/lib/db/schemas/uploads"
-import { queryUploadsCreatedById } from "@/lib/api/uploads"
+import { findUploadsCreatedById, queryUploadsCreatedById } from "@/lib/api/uploads"
 
 export const tags = ["Users"]
 
 export const usersRouter = r({
+  find: r({
+    many: p.use(hasAuth).use(hasRole("SITE_MODERATOR")).query(async () => findUsers({})),
+    byId: p.use(hasAuth).use(hasRole("SITE_MODERATOR")).input(userIdSchema).query(async ({ input }) => findUserById(input)),
+    uploads: p.use(hasAuth).use(hasRole("SITE_MODERATOR")).input(userIdSchema).query(async ({ input }) => findUploadsCreatedById(input)),
+    posts: p.use(hasAuth).use(hasRole("SITE_MODERATOR")).input(userIdSchema).query(async ({ input }) => findPostsCreatedById(input)),
+  }),
   query: r({
     many: p
       .meta({ openapi: {

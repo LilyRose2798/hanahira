@@ -12,7 +12,7 @@ export const api = createServer<typeof appRouter>({
       links: [
         loggerLink({ enabled: _ => true }),
         nextCacheLink({
-          revalidate: 1,
+          revalidate: 5,
           router: appRouter,
           createContext: async () => ({
             headers: {

@@ -2,7 +2,7 @@
 import { PostWithUpload } from "@/lib/db/schemas/posts"
 import { trpc } from "@/lib/trpc/client"
 import PostModal from "@/components/posts/PostModal"
-import PostComp from "@/components/posts/Post"
+import Post from "@/components/posts/Post"
 
 const EmptyState = ({ canEdit = true }: { canEdit?: boolean }) => (
   <div className="text-center">
@@ -23,7 +23,7 @@ const EmptyState = ({ canEdit = true }: { canEdit?: boolean }) => (
 export const PostList = ({ posts, canEdit = true }: { posts: PostWithUpload[], canEdit?: boolean }) => {
   const { data } = trpc.posts.find.manyWithUpload.useQuery(undefined, { initialData: posts, refetchOnMount: false })
   if (data.length === 0) return <EmptyState canEdit={canEdit} />
-  return <ul>{data.toReversed().map(post => <PostComp post={post} key={post.id} />)}</ul>
+  return <ul>{data.map(post => <li className="my-6" key={post.id}><Post post={post} /></li>)}</ul>
 }
 
 export default PostList

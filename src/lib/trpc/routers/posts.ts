@@ -7,7 +7,7 @@ export const tags = ["Posts"]
 
 export const postsRouter = r({
   find: r({
-    manyWithUpload: p.query(async () => findPosts({ with: { upload: true } })),
+    manyWithUpload: p.query(async () => findPosts({ with: { upload: true }, orderBy: (posts, { desc }) => desc(posts.createdAt) })),
     byIdWithUpload: p.input(postIdSchema).query(async ({ input }) => findPostById({ ...input, with: { upload: true } })),
   }),
   query: r({

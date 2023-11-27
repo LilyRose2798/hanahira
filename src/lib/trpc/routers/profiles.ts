@@ -1,16 +1,22 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth } from "@/lib/trpc/middleware"
-import { queryUsernameSchema, publicUserSchema, publicQueryUserSchema, queryCreatedByUsernameSchema } from "@/lib/db/schemas/users"
+import { usernameSchema, queryUsernameSchema, publicUserSchema, publicQueryUserSchema, queryCreatedByUsernameSchema } from "@/lib/db/schemas/users"
 import { partialPostSchema } from "@/lib/db/schemas/posts"
-import { queryUsers, queryUserByUsername } from "@/lib/api/users"
-import { queryPostsCreatedByUsername } from "@/lib/api/posts"
+import { queryUsers, queryUserByUsername, findUserByUsername, findUsers } from "@/lib/api/users"
+import { findPostsCreatedByUsername, queryPostsCreatedByUsername } from "@/lib/api/posts"
 import { tags as postTags } from "@/lib/trpc/routers/posts"
 import { partialUploadSchema } from "@/lib/db/schemas/uploads"
-import { queryUploadsCreatedByUsername } from "@/lib/api/uploads"
+import { findUploadsCreatedByUsername, queryUploadsCreatedByUsername } from "@/lib/api/uploads"
 
 export const tags = ["Profiles"]
 
 export const profilesRouter = r({
+  find: r({
+    many: p.use(hasAuth).query(async () => findUsers({})),
+    byUsername: p.use(hasAuth).input(usernameSchema).query(async ({ input }) => findUserByUsername(input)),
+    uploads: p.use(hasAuth).input(usernameSchema).query(async ({ input }) => findUploadsCreatedByUsername(input)),
+    posts: p.use(hasAuth).input(usernameSchema).query(async ({ input }) => findPostsCreatedByUsername(input)),
+  }),
   query: r({
     many: p
       .meta({ openapi: {
