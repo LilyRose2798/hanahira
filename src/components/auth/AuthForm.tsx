@@ -4,7 +4,7 @@ import { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { signInSchema } from "@/lib/db/schemas/users"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -15,7 +15,6 @@ export const AuthForm = ({ isSignUp = false }: {
   children?: ReactNode
   isSignUp?: boolean
 }) => {
-  const { toast, onError } = useToast()
   const router = useRouter()
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -26,9 +25,11 @@ export const AuthForm = ({ isSignUp = false }: {
   })
 
   const onSuccess = () => {
-    toast({ title: "Success", description: `Signed ${isSignUp ? "up" : "in"}` })
+    toast.success(`Signed ${isSignUp ? "up" : "in"}`)
     router.refresh()
   }
+
+  const onError = (e: { message: string }) => toast.error(e.message)
 
   const { mutate: signIn, isLoading: isSigningIn } = trpc.signIn.useMutation({ onSuccess, onError })
   const { mutate: signUp, isLoading: isSigningUp } = trpc.signUp.useMutation({ onSuccess, onError })

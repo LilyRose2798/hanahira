@@ -27,7 +27,7 @@ export const PostModal = ({ post, emptyState }: {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="mr-1"
+              className="mr-2"
             >
               <path d="M5 12h14" />
               <path d="M12 5v14" />

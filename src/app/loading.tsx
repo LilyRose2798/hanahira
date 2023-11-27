@@ -1,4 +1,4 @@
-export const Loading = () => (
+const Loading = () => (
   <div className="grid place-items-center animate-pulse text-zinc-300 pt-4">
     <div role="status">
       <svg

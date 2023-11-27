@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { useMutation } from "@tanstack/react-query"
 import { z } from "zod"
 import { fileListSchema, maxAllowedFileSize } from "@/lib/db/schemas/utils"
@@ -13,7 +13,6 @@ import { useRef } from "react"
 
 export const UploadForm = ({ uploadComplete, filesLabel = "Files" }: {
   uploadComplete?: (uploads: Upload[]) => void, filesLabel?: string }) => {
-  const { toast, onError } = useToast()
   const fileInputRef = useRef<HTMLInputElement>()
 
   const schema = z.object({ files: fileListSchema })
@@ -34,12 +33,12 @@ export const UploadForm = ({ uploadComplete, filesLabel = "Files" }: {
       const data = await res.json()
       if (res.status !== 200) throw new Error(String(data.message ?? "Unknown error occurred"))
       const uploads = uploadSchema.array().parse(data)
-      toast({ title: "Success", description: "File(s) successfully uploaded" })
+      toast.success(`File${uploads.length > 0 ? "s" : ""} successfully uploaded`)
       form.reset()
       if (fileInputRef.current) fileInputRef.current.value = ""
       uploadComplete?.(uploads)
     },
-    onError: err => (err instanceof Error ? onError(err) : onError({ message: "Unknown error occurred" })),
+    onError: e => toast.error(e instanceof Error ? e.message : "Unknown error occurred"),
   })
 
   return (
@@ -58,9 +57,7 @@ export const UploadForm = ({ uploadComplete, filesLabel = "Files" }: {
             <FormMessage />
           </FormItem>
         )}/>
-        <Button type="submit" className="mr-1" disabled={isLoading}>
-          {`Upload${isLoading ? "ing..." : ""}`}
-        </Button>
+        <Button type="submit" disabled={isLoading}>Upload{isLoading ? "ing Files..." : " Files"}</Button>
       </form>
     </Form>
   )

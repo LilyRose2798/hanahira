@@ -1,7 +1,7 @@
 import { AccountCard, AccountCardFooter, AccountCardBody } from "@/app/account/AccountCard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { trpc } from "@/lib/trpc/client"
 import { updateUserSchema } from "@/lib/db/schemas/users"
@@ -12,7 +12,6 @@ import { z } from "zod"
 import { nullToUndef } from "@/lib/utils"
 
 export const UpdateNameCard = ({ name }: { name: string }) => {
-  const { toast, onError } = useToast()
   const router = useRouter()
   const utils = trpc.useUtils()
   const schema = updateUserSchema.pick({ name: true }).required()
@@ -25,9 +24,9 @@ export const UpdateNameCard = ({ name }: { name: string }) => {
     onSuccess: user => {
       utils.users.query.invalidate()
       router.refresh()
-      toast({ title: "Success", description: `Updated name to ${user.name}` })
+      toast.success(`Updated name to ${user.name}`)
     },
-    onError,
+    onError: e => toast.error(e.message),
   })
 
   return (

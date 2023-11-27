@@ -16,7 +16,7 @@ export const uploads = pgTable("upload", {
   sha512Hash: text("sha512_hash").notNull(),
   blockHash: text("block_hash"),
   width: integer("width"),
-  height: integer("width"),
+  height: integer("height"),
   size: bigint("size", { mode: "number" }).notNull(),
   ...metaColumns,
 })

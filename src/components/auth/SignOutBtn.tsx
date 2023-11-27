@@ -1,26 +1,25 @@
 "use client"
 import { useRouter } from "next/navigation"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { trpc } from "@/lib/trpc/client"
 import React from "react"
 
 export const SignOutBtn = ({ plain = false }) => {
-  const { toast, onError } = useToast()
   const router = useRouter()
 
   const { mutate, isLoading } = trpc.signOut.useMutation({
     onSuccess: () => {
-      toast({ title: "Success", description: "Signed out" })
+      toast.success("Signed out")
       router.push("/sign-in")
       router.refresh()
     },
-    onError: err => {
-      onError(err)
-      if (err.data?.httpStatus === 401) {
+    onError: e => {
+      if (e.data?.httpStatus === 401) {
+        toast.error("Already signed out")
         router.push("/sign-in")
         router.refresh()
-      }
+      } else toast.error(e.message)
     },
   })
 

@@ -58,6 +58,7 @@
     "react-day-picker": "^8.9.1",
     "react-dom": "^18",
     "react-hook-form": "^7.48.2",
+    "sonner": "^1.2.3",
     "superjson": "^2.2.1",
     "swagger-ui-react": "^5.9.3",
     "tailwind-merge": "^2.0.0",

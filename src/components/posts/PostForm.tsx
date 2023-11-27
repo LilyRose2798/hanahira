@@ -5,19 +5,20 @@ import { Input } from "@/components/ui/input"
 import { trpc } from "@/lib/trpc/client"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Post, postSchema } from "@/lib/db/schemas/posts"
 import { preprocessEmptyString } from "@/lib/db/schemas/utils"
 import { z } from "zod"
 import { postRatingName, postRatings } from "@/lib/db/enums/postRating"
 import { Upload } from "@/lib/db/schemas/uploads"
 import { Ref } from "react"
+import Image from "next/image"
+import Link from "next/link"
 
-export const PostForm = ({ upload, post, submitRef, setPost }: {
-  upload: Upload, post?: Post, submitRef?: Ref<HTMLButtonElement>,
-  setPost?: (post: Post | undefined) => void,
+export const PostForm = ({ upload, post, uploadDeleted, setPost, submitRef, deleteUploadRef, deletePostRef }: {
+  upload: Upload, post?: Post, setPost?: (post: Post | undefined) => void, uploadDeleted?: (upload: Upload) => void,
+  submitRef?: Ref<HTMLButtonElement>, deleteUploadRef?: Ref<HTMLButtonElement>, deletePostRef?: Ref<HTMLButtonElement>,
 }) => {
-  const { toast, onError } = useToast()
   const editing = !!post?.id
   const utils = trpc.useUtils()
   const schema = z.object({
@@ -34,34 +35,35 @@ export const PostForm = ({ upload, post, submitRef, setPost }: {
     },
   })
 
-  const { mutate: createPost, isLoading: isCreating } = trpc.posts.create.useMutation({
-    onSuccess: post => {
-      utils.posts.query.invalidate()
-      toast({ title: "Success", description: "Post created!" })
-      setPost?.(post)
+  const onSuccess = (action: "crea" | "upda" | "dele") => (post: Post) => {
+    utils.posts.query.invalidate()
+    toast.success(`Post ${action}ted`)
+    setPost?.(action === "dele" ? undefined : post)
+  }
+  const onError = (e: { message: string }) => toast.error(e.message)
+
+  const { mutate: createPost, isLoading: isCreating } = trpc.posts.create.useMutation({ onSuccess: onSuccess("crea"), onError })
+  const { mutate: updatePost, isLoading: isUpdating } = trpc.posts.update.useMutation({ onSuccess: onSuccess("upda"), onError })
+  const { mutate: deletePost, isLoading: isDeletingPost } = trpc.posts.delete.useMutation({ onSuccess: onSuccess("dele"), onError })
+  const { mutate: deleteUpload, isLoading: isDeletingUpload } = trpc.uploads.delete.useMutation({
+    onSuccess: upload => {
+      utils.uploads.query.invalidate()
+      toast.success("Upload deleted")
+      uploadDeleted?.(upload)
     },
-    onError,
-  })
-  const { mutate: updatePost, isLoading: isUpdating } = trpc.posts.update.useMutation({
-    onSuccess: post => {
-      utils.posts.query.invalidate()
-      toast({ title: "Success", description: "Post updated!" })
-      setPost?.(post)
+    onError: e => {
+      if (e.data?.httpStatus === 404) {
+        toast.error("Upload already deleted")
+        uploadDeleted?.(upload)
+      } else toast.error(e.message)
     },
-    onError,
-  })
-  const { mutate: deletePost, isLoading: isDeleting } = trpc.posts.delete.useMutation({
-    onSuccess: _ => {
-      utils.posts.query.invalidate()
-      toast({ title: "Success", description: "Post deleted!" })
-      setPost?.(undefined)
-    },
-    onError,
   })
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(p => (editing ? updatePost({ ...p, id: post.id }) : createPost({ ...p, uploadId: upload.id })))} className={"space-y-8"}>
+        <h2 className="text-l font-semibold">{upload.originalName}</h2>
+        <Image className="my-4" alt="" src={upload.location} width={300} height={300} />
         <FormField control={form.control} name="description" render={({ field }) => (
           <FormItem>
             <FormLabel>Description</FormLabel>
@@ -82,10 +84,11 @@ export const PostForm = ({ upload, post, submitRef, setPost }: {
         )}/>
         <FormField control={form.control} name="rating" render={({ field }) => (
           <FormItem>
+            <FormLabel>Rating</FormLabel>
             <FormControl>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline">{postRatingName(field.value) ?? "Pick a rating"}</Button>
+                  <Button className="block" variant="outline">{postRatingName(field.value) ?? "Pick a rating"}</Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
                   <DropdownMenuLabel>Rating</DropdownMenuLabel>
@@ -99,14 +102,17 @@ export const PostForm = ({ upload, post, submitRef, setPost }: {
             <FormMessage />
           </FormItem>
         )}/>
-        <Button ref={submitRef} type="submit" className="mr-1" disabled={isCreating || isUpdating}>
+        {editing && <div><Link href={`/posts/${post.id}`}>View Post</Link></div>}
+        <Button ref={submitRef} type="submit" className="mr-2" disabled={isCreating || isUpdating}>
           {editing ? `Updat${isUpdating ? "ing Post..." : "e Post"}` : `Creat${isCreating ? "ing Post..." : "e Post"}`}
         </Button>
-        {editing ? (
-          <Button type="button" variant="destructive" onClick={() => deletePost(post)} disabled={isDeleting}>
-            Delet{isDeleting ? "ing Post..." : "e Post"}
-          </Button>
-        ) : null}
+        {editing ?
+          <Button ref={deletePostRef} type="button" variant="destructive" onClick={() => deletePost({ id: post.id })} disabled={isDeletingPost}>
+            Delet{isDeletingPost ? "ing Post..." : "e Post"}
+          </Button> :
+          <Button ref={deleteUploadRef} className="my-4" type="button" variant="destructive" onClick={() => deleteUpload({ id: upload.id })} disabled={isDeletingUpload}>
+          Delet{isDeletingUpload ? "ing Upload..." : "e Upload"}
+          </Button>}
       </form>
     </Form>
   )

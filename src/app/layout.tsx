@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import { ReactNode } from "react"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/ThemeProvider"
-import { Toaster } from "@/components/ui/toaster"
+import ThemeProvider from "@/components/ThemeProvider"
+import Toaster from "@/components/Toaster"
 import Navbar from "@/components/Navbar"
 import TrpcProvider from "@/lib/trpc/Provider"
 
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   keywords: ["Booru", "Imageboard"],
 }
 
-export const RootLayout = ({ children }: { children: ReactNode }) => (
+const RootLayout = ({ children }: { children: ReactNode }) => (
   <html lang="en">
     <body className={inter.className}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
