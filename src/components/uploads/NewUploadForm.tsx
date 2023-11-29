@@ -25,13 +25,12 @@ const PostFormListItem = ({ upload, uploadRefMap, uploadDeleted }: {
   </li>
 }
 
-export const NewUploadForm = ({ initialUploads }: { initialUploads?: Upload[] }) => {
-  const [uploads, _setUploads] = useState<Upload[]>(initialUploads ?? [])
+export const NewUploadForm = ({ initialUploads = [] }: { initialUploads?: Upload[] }) => {
+  const [uploads, _setUploads] = useState<Upload[]>(initialUploads)
   const setUploads = (action: (prev: Upload[]) => Upload[]) => _setUploads(prev => {
     const curr = action(prev)
     window.history.replaceState(window.history.state, "", curr.length === 0 ?
-      window.location.pathname :
-      `?ids=${curr.map(({ id }) => id).join(",")}`)
+      window.location.pathname : `?ids=${curr.map(({ id }) => id).join(",")}`)
     return curr
   })
   const addUploads = (uploads: Upload[]) => setUploads(prev => [...prev, ...uploads])
@@ -39,17 +38,15 @@ export const NewUploadForm = ({ initialUploads }: { initialUploads?: Upload[] })
   const uploadRefMap: UploadRefMap = new Map()
   const hasUploads = uploads.length > 0
   return <div>
-    {hasUploads && <>
-      <ul>
-        {uploads.map(upload => <PostFormListItem key={upload.id} upload={upload} uploadRefMap={uploadRefMap} uploadDeleted={remUpload} />)}
-      </ul>
-      <div>
-        <Button className="my-6 mr-2" type="button" onClick={() => [...uploadRefMap.values()].map(x => x.submit.current?.click())}>Save All Posts</Button>
-        <Button className="mr-2" type="button" variant="destructive" onClick={() => [...uploadRefMap.values()].map(x => x.deleteUpload.current?.click())}>Delete All Uploads</Button>
-        <Button type="button" variant="destructive" onClick={() => [...uploadRefMap.values()].map(x => x.deletePost.current?.click())}>Delete All Posts</Button>
-      </div>
-    </>}
+    {hasUploads && <ul>
+      {uploads.map(upload => <PostFormListItem key={upload.id} upload={upload} uploadRefMap={uploadRefMap} uploadDeleted={remUpload} />)}
+    </ul>}
     <UploadForm uploadComplete={addUploads} filesLabel={hasUploads ? "Add Files" : "Files"} />
+    {hasUploads && <div>
+      <Button className="my-6 mr-2" type="button" onClick={() => [...uploadRefMap.values()].map(x => x.submit.current?.click())}>Save All Posts</Button>
+      <Button className="mr-2" type="button" variant="destructive" onClick={() => [...uploadRefMap.values()].map(x => x.deleteUpload.current?.click())}>Delete All Uploads</Button>
+      <Button type="button" variant="destructive" onClick={() => [...uploadRefMap.values()].map(x => x.deletePost.current?.click())}>Delete All Posts</Button>
+    </div>}
   </div>
 }
 
