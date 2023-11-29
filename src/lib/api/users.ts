@@ -3,13 +3,13 @@ import { whereConfig, paginationConfig, sortingConfig, fieldsConfig } from "@/li
 import { KnownKeysOnly, eq } from "drizzle-orm"
 import { userDefaults, UserIdParams, UsernameParams, CreateUserParams, UpdateUserParams, QueryUserParams, QueryUsernameParams, QueryUserIdParams } from "@/lib/db/schemas/users"
 import { users } from "@/lib/db/tables/users"
-import { parseFound, parseCreated, parseFoundFirst } from "@/lib/api/utils"
+import { parseFound, parseCreated, parseFoundFirst, limit } from "@/lib/api/utils"
 
 type FindUsersParams = NonNullable<Parameters<typeof db.query.users.findMany>[0]>
 type FindUserParams = Omit<FindUsersParams, "limit">
 
 export const findUsers = <T extends FindUserParams>(config: KnownKeysOnly<T, FindUsersParams>) => db.query.users
-  .findMany(config).execute().then(parseFound)
+  .findMany({ limit, ...config }).execute().then(parseFound)
 
 export const findUserById = <T extends UserIdParams & FindUserParams>(
   { id, ...config }: KnownKeysOnly<T, UserIdParams & FindUserParams>) => db.query.users

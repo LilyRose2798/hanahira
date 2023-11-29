@@ -12,3 +12,5 @@ export const parseCreated = <T>(x: T[]) => {
   if (!x || x.length === 0) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create" })
   return x[0]
 }
+
+export const limit = 50

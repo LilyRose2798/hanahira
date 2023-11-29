@@ -8,12 +8,12 @@ import { Upload } from "@/lib/db/schemas/uploads"
 export const metadata: Metadata = { title: "New Upload" }
 
 const NewUpload = async ({ searchParams }: { searchParams?: { ids?: string } }) => {
-  const { user } = await validateAuth()
-  if (!user) redirect("/sign-in")
+  const { session } = await validateAuth()
+  if (!session) redirect("/sign-in")
   let initialUploads: Upload[] | undefined = undefined
   if (searchParams?.ids) {
     const ids = searchParams.ids.split(",")
-    const uploads = await api.uploads.find.byIdsCreatedBy.query({ ids, createdBy: user.id })
+    const uploads = await api.account.find.uploadsByIds.query({ ids })
     const uploadsMap = new Map(uploads.map(upload => [upload.id, upload]))
     initialUploads = ids.flatMap(id => (upload => (upload ? [upload] : []))(uploadsMap.get(id)))
   }

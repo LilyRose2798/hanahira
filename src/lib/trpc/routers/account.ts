@@ -4,10 +4,10 @@ import { replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schema
 import { findUserById, replaceUser, updateUser, deleteUser, queryUserById } from "@/lib/api/users"
 import { z } from "zod"
 import { invalidateAuthAndReturn } from "@/lib/lucia"
-import { partialUploadSchema } from "@/lib/db/schemas/uploads"
+import { partialUploadSchema, uploadIdSchema } from "@/lib/db/schemas/uploads"
 import { baseQuerySchema } from "@/lib/db/schemas/utils"
 import { partialPostSchema } from "@/lib/db/schemas/posts"
-import { findUploadsCreatedBy, queryUploadsCreatedById } from "@/lib/api/uploads"
+import { findUploadsByIdsCreatedBy, findUploadsCreatedBy, queryUploadsCreatedById } from "@/lib/api/uploads"
 import { findPostsCreatedBy, queryPostsCreatedById } from "@/lib/api/posts"
 
 export const tags = ["Account"]
@@ -16,6 +16,8 @@ export const accountRouter = r({
   find: r({
     current: p.use(hasAuth).query(async ({ ctx: { user: { id } } }) => findUserById({ id })),
     uploads: p.use(hasAuth).query(async ({ ctx: { user: { id: createdBy } } }) => findUploadsCreatedBy({ createdBy })),
+    uploadsByIds: p.use(hasAuth).input(z.object({ ids: uploadIdSchema.shape.id.array() }))
+      .query(async ({ input, ctx: { user: { id: createdBy } } }) => findUploadsByIdsCreatedBy({ ...input, createdBy })),
     posts: p.use(hasAuth).query(async ({ ctx: { user: { id: createdBy } } }) => findPostsCreatedBy({ createdBy })),
   }),
   query: r({
