@@ -17,12 +17,12 @@ export const findPostById = <T extends PostIdParams & FindPostParams>(
   { id, ...config }: KnownKeysOnly<T, PostIdParams & FindPostParams>) => db.query.posts
     .findFirst({ where: (posts, { eq }) => eq(posts.id, id), ...config }).execute().then(parseFound)
 
-export const findPostsCreatedBy = <T extends PostsCreatedByParams & FindPostParams>(
-  { createdBy, limit, ...config }: KnownKeysOnly<T, PostsCreatedByParams & FindPostParams>) => db.query.posts
+export const findPostsCreatedBy = <T extends PostsCreatedByParams & FindPostsParams>(
+  { createdBy, limit, ...config }: KnownKeysOnly<T, PostsCreatedByParams & FindPostsParams>) => db.query.posts
     .findMany({ where: (posts, { eq }) => eq(posts.createdBy, createdBy), ...config }).execute().then(parseFound)
 
-export const findPostsCreatedByUsername = <T extends UsernameParams & FindPostParams>(
-  { username, limit, ...config }: KnownKeysOnly<T, UsernameParams & FindPostParams>) => (
+export const findPostsCreatedByUsername = <T extends UsernameParams & FindPostsParams>(
+  { username, limit, ...config }: KnownKeysOnly<T, UsernameParams & FindPostsParams>) => (
     findUserByUsername({ username, columns: { id: true } }).then(({ id: createdBy }) => findPostsCreatedBy({ createdBy, ...config })))
 
 export const queryPosts = ({ fields, page, sort, ...post }: QueryPostsParams) => db.query.posts.findMany({

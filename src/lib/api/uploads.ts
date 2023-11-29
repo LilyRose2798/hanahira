@@ -23,12 +23,12 @@ export const findUploadsByIdsCreatedBy = <T extends { ids: UploadIdParams["id"][
     ...config,
   }).execute().then(parseFound)
 
-export const findUploadsCreatedBy = <T extends UploadCreatedByParams & FindUploadParams>(
-  { createdBy, limit, ...config }: KnownKeysOnly<T, UploadCreatedByParams & FindUploadParams>) => db.query.uploads
+export const findUploadsCreatedBy = <T extends UploadCreatedByParams & FindUploadsParams>(
+  { createdBy, limit, ...config }: KnownKeysOnly<T, UploadCreatedByParams & FindUploadsParams>) => db.query.uploads
     .findMany({ where: (uploads, { eq }) => eq(uploads.createdBy, createdBy), ...config }).execute().then(parseFound)
 
-export const findUploadsCreatedByUsername = <T extends UsernameParams & FindUploadParams>(
-  { username, limit, ...config }: KnownKeysOnly<T, UsernameParams & FindUploadParams>) => (
+export const findUploadsCreatedByUsername = <T extends UsernameParams & FindUploadsParams>(
+  { username, limit, ...config }: KnownKeysOnly<T, UsernameParams & FindUploadsParams>) => (
     findUserByUsername({ username, columns: { id: true } }).then(({ id: createdBy }) => findUploadsCreatedBy({ createdBy, ...config })))
 
 export const queryUploads = ({ fields, page, sort, ...upload }: QueryUploadsParams) => db.query.uploads.findMany({
