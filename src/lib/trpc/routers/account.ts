@@ -7,16 +7,16 @@ import { invalidateAuthAndReturn } from "@/lib/lucia"
 import { partialUploadSchema } from "@/lib/db/schemas/uploads"
 import { baseQuerySchema } from "@/lib/db/schemas/utils"
 import { partialPostSchema } from "@/lib/db/schemas/posts"
-import { findUploadsCreatedById, queryUploadsCreatedById } from "@/lib/api/uploads"
-import { findPostsCreatedById, queryPostsCreatedById } from "@/lib/api/posts"
+import { findUploadsCreatedBy, queryUploadsCreatedById } from "@/lib/api/uploads"
+import { findPostsCreatedBy, queryPostsCreatedById } from "@/lib/api/posts"
 
 export const tags = ["Account"]
 
 export const accountRouter = r({
   find: r({
     current: p.use(hasAuth).query(async ({ ctx: { user: { id } } }) => findUserById({ id })),
-    uploads: p.use(hasAuth).query(async ({ ctx: { user: { id } } }) => findUploadsCreatedById({ id })),
-    posts: p.use(hasAuth).query(async ({ ctx: { user: { id } } }) => findPostsCreatedById({ id })),
+    uploads: p.use(hasAuth).query(async ({ ctx: { user: { id: createdBy } } }) => findUploadsCreatedBy({ createdBy })),
+    posts: p.use(hasAuth).query(async ({ ctx: { user: { id: createdBy } } }) => findPostsCreatedBy({ createdBy })),
   }),
   query: r({
     current: p

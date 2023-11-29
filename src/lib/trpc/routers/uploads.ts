@@ -1,7 +1,8 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth } from "@/lib/trpc/middleware"
-import { queryUploads, queryUploadById, replaceUpload, updateUpload, deleteUpload, findUploads, findUploadById } from "@/lib/api/uploads"
-import { uploadSchema, partialUploadSchema, uploadIdSchema, queryUploadsSchema, queryUploadIdSchema, replaceUploadSchema, updateUploadSchema } from "@/lib/db/schemas/uploads"
+import { queryUploads, queryUploadById, replaceUpload, updateUpload, deleteUpload, findUploads, findUploadById, findUploadsByIdsCreatedBy } from "@/lib/api/uploads"
+import { uploadSchema, partialUploadSchema, uploadIdSchema, queryUploadsSchema, queryUploadIdSchema, replaceUploadSchema, updateUploadSchema, uploadCreatedBySchema } from "@/lib/db/schemas/uploads"
+import { z } from "zod"
 
 export const tags = ["Uploads"]
 
@@ -9,6 +10,8 @@ export const uploadsRouter = r({
   find: r({
     many: p.query(async () => findUploads({})),
     byId: p.input(uploadIdSchema).query(async ({ input }) => findUploadById(input)),
+    byIdsCreatedBy: p.input(z.object({ ids: uploadIdSchema.shape.id.array(), ...uploadCreatedBySchema.shape }))
+      .query(async ({ input }) => findUploadsByIdsCreatedBy(input)),
   }),
   query: r({
     many: p

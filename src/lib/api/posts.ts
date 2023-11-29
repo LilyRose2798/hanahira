@@ -4,7 +4,7 @@ import { KnownKeysOnly, eq } from "drizzle-orm"
 import { postDefaults, PostIdParams, PostsCreatedByParams, PostsUpdatedByParams, CreatePostParams, ReplacePostParams, UpdatePostParams, QueryPostsParams, QueryPostIdParams } from "@/lib/db/schemas/posts"
 import { posts } from "@/lib/db/tables/posts"
 import { parseFound, parseCreated, parseFoundFirst } from "@/lib/api/utils"
-import { UserIdParams, UsernameParams, QueryCreatedByIdParams, QueryCreatedByUsernameParams } from "@/lib/db/schemas/users"
+import { UsernameParams, QueryCreatedByIdParams, QueryCreatedByUsernameParams } from "@/lib/db/schemas/users"
 import { findUserByUsername } from "@/lib/api/users"
 
 type FindPostsParams = NonNullable<Parameters<typeof db.query.posts.findMany>[0]>
@@ -17,13 +17,13 @@ export const findPostById = <T extends PostIdParams & FindPostParams>(
   { id, ...config }: KnownKeysOnly<T, PostIdParams & FindPostParams>) => db.query.posts
     .findFirst({ where: (posts, { eq }) => eq(posts.id, id), ...config }).execute().then(parseFound)
 
-export const findPostsCreatedById = <T extends UserIdParams & FindPostParams>(
-  { id, ...config }: KnownKeysOnly<T, UserIdParams & FindPostParams>) => db.query.posts
-    .findMany({ where: (posts, { eq }) => eq(posts.createdBy, id), ...config }).execute().then(parseFound)
+export const findPostsCreatedBy = <T extends PostsCreatedByParams & FindPostParams>(
+  { createdBy, ...config }: KnownKeysOnly<T, PostsCreatedByParams & FindPostParams>) => db.query.posts
+    .findMany({ where: (posts, { eq }) => eq(posts.createdBy, createdBy), ...config }).execute().then(parseFound)
 
 export const findPostsCreatedByUsername = <T extends UsernameParams & FindPostParams>(
   { username, ...config }: KnownKeysOnly<T, UsernameParams & FindPostParams>) => (
-    findUserByUsername({ username, columns: { id: true } }).then(({ id }) => findPostsCreatedById({ id, ...config })))
+    findUserByUsername({ username, columns: { id: true } }).then(({ id: createdBy }) => findPostsCreatedBy({ createdBy, ...config })))
 
 export const queryPosts = ({ fields, page, sort, ...post }: QueryPostsParams) => db.query.posts.findMany({
   ...whereConfig(post),
