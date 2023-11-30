@@ -2,7 +2,7 @@ import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
 import { baseTableSchemas, fieldsSchema, baseQuerySchema } from "@/lib/db/schemas/utils"
 import { UsersTable } from "@/lib/db/tables/users"
-import { userRoles, defaultUserRole } from "@/lib/db/enums/userRole"
+import { userRoles, defaultUserRole } from "@/lib/db/enums/user-role"
 
 extendZodWithOpenApi(z)
 

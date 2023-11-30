@@ -3,8 +3,8 @@ import { extendZodWithOpenApi } from "zod-openapi"
 import { Upload } from "@/lib/db/schemas/uploads"
 import { tableSchemas } from "@/lib/db/schemas/utils"
 import { PostsTable } from "@/lib/db/tables/posts"
-import { postRatings } from "@/lib/db/enums/postRating"
-import { postStatuses } from "@/lib/db/enums/postStatus"
+import { postRatings } from "@/lib/db/enums/post-rating"
+import { postStatuses } from "@/lib/db/enums/post-status"
 
 extendZodWithOpenApi(z)
 

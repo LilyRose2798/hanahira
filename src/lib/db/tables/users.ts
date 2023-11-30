@@ -8,7 +8,7 @@ import { poolPosts, pools } from "@/lib/db/tables/pools"
 import { artistAliases, artistLinks, artists } from "@/lib/db/tables/artists"
 import { userRoleEnum } from "@/lib/db/tables/enums"
 import { idColumn, timestampMetaColumns } from "@/lib/db/tables/utils"
-import { defaultUserRole } from "@/lib/db/enums/userRole"
+import { defaultUserRole } from "@/lib/db/enums/user-role"
 
 export const users = pgTable("user", {
   ...idColumn,

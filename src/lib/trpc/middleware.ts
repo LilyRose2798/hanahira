@@ -2,7 +2,7 @@ import { TRPCError, experimental_standaloneMiddleware as m } from "@trpc/server"
 import { findPostById } from "@/lib/api/posts"
 import { User, UserIdParams } from "@/lib/db/schemas/users"
 import { PostIdParams } from "@/lib/db/schemas/posts"
-import { UserRole, hasUserRole } from "@/lib/db/enums/userRole"
+import { UserRole, hasUserRole } from "@/lib/db/enums/user-role"
 import { validateAuth } from "@/lib/lucia"
 
 export const hasAuth = m()

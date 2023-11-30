@@ -1,5 +1,5 @@
-import { postRatingName } from "@/lib/db/enums/postRating"
-import { postStatusName } from "@/lib/db/enums/postStatus"
+import { postRatingName } from "@/lib/db/enums/post-rating"
+import { postStatusName } from "@/lib/db/enums/post-status"
 import { PostWithUpload } from "@/lib/db/schemas/posts"
 import Image from "next/image"
 
