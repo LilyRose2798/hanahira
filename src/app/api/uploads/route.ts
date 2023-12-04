@@ -6,13 +6,14 @@ import { fileListSchema } from "@/lib/db/schemas/utils"
 import { createUpload } from "@/lib/api/uploads"
 import { FileExtension, fileTypeFromBuffer } from "file-type"
 import { nanoid } from "nanoid"
-import { validateAuth } from "@/lib/lucia"
+import { api } from "@/lib/trpc/api"
 import { bmvbhash } from "@/lib/blockhash"
 import { createHash } from "crypto"
 import { decode as decodeJpeg } from "jpeg-js"
 import { PNG } from "pngjs"
 import { decode as decodeWebp } from "@jsquash/webp"
 import decodeGif from "decode-gif"
+import { authErrorHandle } from "@/lib/trpc/utils"
 
 const createHashCreator = (algorithm: string) => (buffer: Buffer) => createHash(algorithm, { encoding: "hex" }).update(buffer).digest("hex")
 const createMD5Hash = createHashCreator("md5")
@@ -32,7 +33,7 @@ const decoders: Partial<Record<FileExtension, (buffer: Buffer) => DecodedData | 
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { user } = await validateAuth()
+    const user = await api.account.find.current.query().catch(authErrorHandle)
     if (!user) return NextResponse.json({ code: "UNAUTHORIZED", message: "Not signed in" }, { status: 401 })
     const createdBy = user.id
     const formData = await req.formData()

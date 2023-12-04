@@ -1,6 +1,6 @@
 import { Lucia } from "lucia"
 import { nextjs } from "lucia/middleware"
-import { headers, cookies } from "next/headers"
+import * as context from "next/headers"
 import { PostgresJsAdapter } from "@lucia-auth/adapter-postgresql"
 import { client } from "@/lib/db"
 import { env } from "@/lib/env.mjs"
@@ -39,7 +39,7 @@ declare module "lucia" {
 }
 
 export const getAuthRequest = (csrfProtection: boolean = false) => (
-  auth.handleRequest(csrfProtection ? "POST" : "GET", { headers, cookies }))
+  auth.handleRequest(csrfProtection ? "POST" : "GET", context))
 export const validateAuth = async (csrfProtection: boolean = false) => (
   (async x => (await x.validate()) ?? await x.validateBearerToken()))(getAuthRequest(csrfProtection))
 export const invalidateAuthAndReturn = <T>(x: T) => {

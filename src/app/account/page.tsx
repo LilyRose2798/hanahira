@@ -1,13 +1,13 @@
 import UserSettings from "@/app/account/UserSettings"
-import { validateAuth } from "@/lib/lucia"
+import { api } from "@/lib/trpc/api"
+import { authErrorRedirect } from "@/lib/trpc/utils"
 import { Metadata } from "next"
-import { redirect } from "next/navigation"
 
 export const metadata: Metadata = { title: "Account" }
+export const dynamic = "force-dynamic"
 
 const Account = async () => {
-  const { session, user } = await validateAuth()
-  if (!session) redirect("/sign-in")
+  const user = await api.account.find.current.query().catch(authErrorRedirect)
   return (
     <section className="container">
       <h1 className="text-2xl font-semibold my-6">Account</h1>

@@ -6,6 +6,7 @@ import ThemeProvider from "@/components/ThemeProvider"
 import Toaster from "@/components/Toaster"
 import Navbar from "@/components/Navbar"
 import TrpcProvider from "@/lib/trpc/Provider"
+import { cookies } from "next/headers"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,7 +24,7 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
   <html lang="en">
     <body className={inter.className}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <TrpcProvider>
+        <TrpcProvider cookies={cookies().toString()}>
           <main className="max-w-5xl mx-auto px-3">
             <Navbar />
             {children}

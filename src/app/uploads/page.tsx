@@ -1,16 +1,17 @@
-import { validateAuth } from "@/lib/lucia"
+import UploadList from "@/components/uploads/UploadList"
+import { api } from "@/lib/trpc/api"
+import { authErrorRedirect } from "@/lib/trpc/utils"
 import { Metadata } from "next"
-import { redirect } from "next/navigation"
 
 export const metadata: Metadata = { title: "My Uploads" }
+export const dynamic = "force-dynamic"
 
 const Uploads = async () => {
-  const { session } = await validateAuth()
-  if (!session) redirect("/sign-in")
+  const uploads = await api.account.find.uploads.query().catch(authErrorRedirect)
   return (
     <section className="container">
       <h1 className="font-semibold text-2xl my-6">My Uploads</h1>
-      {/* <PostList posts={posts} canEdit={signedIn} /> */}
+      <UploadList uploads={uploads} />
     </section>
   )
 }

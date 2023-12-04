@@ -1,7 +1,7 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth } from "@/lib/trpc/middleware"
 import { replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schemas/users"
-import { findUserById, replaceUser, updateUser, deleteUser, queryUserById } from "@/lib/api/users"
+import { replaceUser, updateUser, deleteUser, queryUserById } from "@/lib/api/users"
 import { z } from "zod"
 import { invalidateAuthAndReturn } from "@/lib/lucia"
 import { partialUploadSchema, uploadIdSchema } from "@/lib/db/schemas/uploads"
@@ -14,7 +14,8 @@ export const tags = ["Account"]
 
 export const accountRouter = r({
   find: r({
-    current: p.use(hasAuth).query(async ({ ctx: { user: { id } } }) => findUserById({ id })),
+    current: p.use(hasAuth).query(async ({ ctx: { user } }) => user),
+    currentWithSession: p.use(hasAuth).query(async ({ ctx: { user, session } }) => ({ ...user, session })),
     uploads: p.use(hasAuth).query(async ({ ctx: { user: { id: createdBy } } }) => findUploadsCreatedBy({ createdBy })),
     uploadsByIds: p.use(hasAuth).input(z.object({ ids: uploadIdSchema.shape.id.array() }))
       .query(async ({ input, ctx: { user: { id: createdBy } } }) => findUploadsByIdsCreatedBy({ ...input, createdBy })),

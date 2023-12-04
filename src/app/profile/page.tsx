@@ -1,15 +1,18 @@
 import SignOutBtn from "@/components/auth/SignOutBtn"
-import { validateAuth } from "@/lib/lucia"
-import { redirect } from "next/navigation"
+import { api } from "@/lib/trpc/api"
+import { authErrorRedirect } from "@/lib/trpc/utils"
+import { Metadata } from "next"
+
+export const metadata: Metadata = { title: "Profile" }
+export const dynamic = "force-dynamic"
 
 const Profile = async () => {
-  const { session, user } = await validateAuth()
-  if (!session) redirect("/sign-in")
+  const user = await api.account.find.currentWithSession.query().catch(authErrorRedirect)
   return (
     <section className="container">
       <h1 className="text-2xl font-semibold my-6">Profile</h1>
       <pre className="bg-slate-100 dark:bg-slate-800 p-6 rounded-lg my-2">
-        {JSON.stringify(session, null, 2)}
+        {JSON.stringify(user.session, null, 2)}
       </pre>
       <pre className="bg-slate-100 dark:bg-slate-800 p-6 rounded-lg my-2">
         {JSON.stringify(user, null, 2)}

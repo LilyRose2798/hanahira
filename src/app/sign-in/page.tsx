@@ -1,14 +1,16 @@
 import AuthForm from "@/components/auth/AuthForm"
-import { validateAuth } from "@/lib/lucia"
+import { authErrorHandle } from "@/lib/trpc/utils"
 import { Metadata } from "next"
 import Link from "next/link"
+import { api } from "@/lib/trpc/api"
 import { redirect } from "next/navigation"
 
 export const metadata: Metadata = { title: "Sign In" }
+export const dynamic = "force-dynamic"
 
 const SignIn = async () => {
-  const { session } = await validateAuth()
-  if (session) redirect("/")
+  const user = await api.account.find.current.query().catch(authErrorHandle)
+  if (user) redirect("/")
   return (
     <section className="container max-w-lg mx-auto my-4 bg-secondary p-10">
       <h1 className="text-2xl font-semibold text-center">Sign in to your account</h1>

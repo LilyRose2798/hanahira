@@ -1,22 +1,16 @@
-import { validateAuth } from "@/lib/lucia"
 import { Metadata } from "next"
-import { redirect } from "next/navigation"
 import NewUploadForm from "@/components/uploads/NewUploadForm"
 import { api } from "@/lib/trpc/api"
-import { Upload } from "@/lib/db/schemas/uploads"
+import { authErrorRedirect } from "@/lib/trpc/utils"
 
 export const metadata: Metadata = { title: "New Upload" }
+export const dynamic = "force-dynamic"
 
 const NewUpload = async ({ searchParams }: { searchParams?: { ids?: string } }) => {
-  const { session } = await validateAuth()
-  if (!session) redirect("/sign-in")
-  let initialUploads: Upload[] | undefined = undefined
-  if (searchParams?.ids) {
-    const ids = searchParams.ids.split(",")
-    const uploads = await api.account.find.uploadsByIds.query({ ids })
-    const uploadsMap = new Map(uploads.map(upload => [upload.id, upload]))
-    initialUploads = ids.flatMap(id => (upload => (upload ? [upload] : []))(uploadsMap.get(id)))
-  }
+  const ids = searchParams?.ids?.split(",") ?? []
+  const uploads = await api.account.find.uploadsByIds.query({ ids }).catch(authErrorRedirect)
+  const uploadsMap = new Map(uploads.map(upload => [upload.id, upload]))
+  const initialUploads = ids.flatMap(id => (upload => (upload ? [upload] : []))(uploadsMap.get(id)))
   return (
     <section className="container">
       <h1 className="font-semibold text-2xl my-6">New Upload</h1>

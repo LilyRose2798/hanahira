@@ -3,16 +3,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import SignOutBtn from "@/components/auth/SignOutBtn"
 import { ThemeToggle } from "@/components/ui/ThemeToggle"
-import { validateAuth } from "@/lib/lucia"
 import Image from "next/image"
+import { api } from "@/lib/trpc/api"
+import { authErrorHandle } from "@/lib/trpc/utils"
 
 export const Navbar = async () => {
-  const { user } = await validateAuth()
+  const user = await api.account.find.current.query().catch(authErrorHandle)
   return (
     <nav className="py-2 flex items-center justify-between transition-all duration-300">
       <h1 className="font-semibold hover:opacity-75 transition-hover cursor-pointer">
         <Link href="/"><Image src="/logo.svg" width={40} height={40} alt="The Hanahira Logo" /></Link>
       </h1>
+      <Link href="/posts">Posts</Link>
+      {user && <Link href="/uploads">Uploads</Link>}
+      {user && <Link href="/uploads/new">New Upload</Link>}
       <div className="space-x-2 flex items-center">
         <ThemeToggle />
         {user ? (
