@@ -34,7 +34,7 @@ export type SortingParams = z.infer<typeof sortingSchema>
 export const fieldsSchema = z.object({
   fields: z.string().openapi({ description: "The fields to return", example: "id,name" }).optional(),
 })
-export type FieldsParams = z.infer<typeof sortingSchema>
+export type FieldsParams = z.infer<typeof fieldsSchema>
 
 export const timestampMetaColumnMask = {
   createdAt: true,
@@ -79,54 +79,76 @@ type _DefaultMask<T extends Table> = OmitMeta<OmitId<{ [_ in { [K in keyof T["_"
 export type DefaultMask<T extends Table> = {} extends _DefaultMask<T> ? Record<string, never> : _DefaultMask<T>
 
 const baseQuerySchemaShape = { ...paginationSchema.shape, ...sortingSchema.shape, ...fieldsSchema.shape }
+type BaseQuerySchemaShape = typeof baseQuerySchemaShape
 export const baseQuerySchema = z.object(baseQuerySchemaShape)
 
-const optPick = <T extends z.ZodRawShape, Mask extends { [_ in keyof T]?: true }>(shape: T, mask?: Mask):
-  typeof mask extends undefined ? z.ZodObject<T> : z.ZodObject<Pick<T, Extract<keyof T, keyof Mask>>> => (
-    mask === undefined ? z.object(shape) : z.object(shape).pick(mask) as any)
+export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name: string) => {
+  type TableMask = { [_ in keyof T["_"]["columns"]]?: true }
+  type SchemaShape = BuildSelectSchema<T, {}>
+  type Schema = z.ZodObject<SchemaShape>
+  type InputSchemaShape = EnhancedOmit<SchemaShape, keyof TimestampMetaColumns>
+  type PartialSchema = z.ZodObject<{ [K in keyof SchemaShape]: z.ZodOptional<SchemaShape[K]> }>
+  type IdSchemaShape = SchemaShape extends { id: any } ? { id: SchemaShape["id"] } : {}
+  type RequiredIdSchemaShape = SchemaShape extends { id: any } ? { id: z.deoptional<SchemaShape["id"]> } : {}
+  type IdSchema = z.ZodObject<IdSchemaShape>
+  type QueryIdSchemaShape = IdSchemaShape & typeof fieldsSchema.shape
+  type QueryIdSchema = z.ZodObject<QueryIdSchemaShape>
+  type QuerySchemaShape = { [K in keyof SchemaShape]: z.ZodOptional<SchemaShape[K] extends z.ZodNullable<infer U> ? U : SchemaShape[K]> }
+  type QuerySchema = z.ZodObject<QuerySchemaShape & BaseQuerySchemaShape>
+  type BaseInsertSchemaShape = BuildInsertSchema<T, {}>
+  type InsertSchemaShape = EnhancedOmit<BaseInsertSchemaShape, keyof MetaColumns>
+  type InsertSchema = z.ZodObject<InsertSchemaShape>
+  type CreateSchemaShape = Omit<InsertSchemaShape, "id">
+  type CreateSchema = z.ZodObject<CreateSchemaShape>
+  type ReplaceSchemaShape = RequiredIdSchemaShape & CreateSchemaShape
+  type ReplaceSchema = z.ZodObject<ReplaceSchemaShape>
+  type SchemaWithoutId = Omit<SchemaShape, "id">
+  type UpdateSchemaShape = RequiredIdSchemaShape & { [K in keyof SchemaWithoutId]: z.ZodOptional<SchemaWithoutId[K]> }
+  type UpdateSchema = z.ZodObject<UpdateSchemaShape>
+  type Defaults = SQLDefaults<z.infer<CreateSchema>>
 
-export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name: string) => <
-  PublicMask extends { [_ in keyof T["_"]["columns"]]?: true },
->(schemaShape: EnhancedOmit<BuildSelectSchema<T, {}>, keyof TimestampMetaColumns>,
-    defaultMask: DefaultMask<T>, publicMask?: PublicMask) => {
-  const title = titleCase(name)
-  const createdAt = z.coerce.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) })
-  const updatedAt = z.coerce.date().openapi({ description: `The date the ${name} was last updated`, example: new Date(0) })
-  const baseSchema = z.object({ ...schemaShape, createdAt, updatedAt })
-  const schema = baseSchema.openapi({ ref: title, title, description: `The data for a ${name}` })
-  const partialSchema = baseSchema.openapi({ title, description: `The data for a ${name}` })
-  const publicSchema = optPick(schema.shape, publicMask)
-  publicSchema._def.openapi = { title, description: `The public data for a ${name}` }
-  const idSchema = z.object(("id" in schemaShape ? { id: (schemaShape.id as z.ZodTypeAny) } : {}) as typeof schemaShape extends { id: any } ? { id: typeof schemaShape["id"] } : {})
-  const queryIdSchema = z.object({ ...idSchema.shape, ...fieldsSchema.shape })
-  const insertSchema = z.object(Object.fromEntries(Object.entries(schemaShape).filter(([k, _]) => !(k in metaColumnMask)).map(([k, v]) => (
-    [k, v instanceof z.ZodNullable || k in defaultMask ? (v as z.ZodTypeAny).optional() : v]))) as
-      EnhancedOmit<BuildInsertSchema<T, {}>, keyof MetaColumns>)
-  const querySchemaShape = Object.fromEntries(Object.entries(schema.shape as any)
-    .map(([k, v]) => [k, (v instanceof z.ZodNullable ? v.unwrap() : v).optional()])) as {
-      // eslint-disable-next-line no-use-before-define
-      [K in keyof typeof schema.shape]: z.ZodOptional<typeof schema.shape[K] extends z.ZodNullable<infer U> ? U : typeof schema.shape[K]>
-    }
-  const querySchema = z.object({ ...querySchemaShape, ...baseQuerySchemaShape })
-  const publicQuerySchemaShape = optPick(querySchemaShape, publicMask).shape
-  const publicQuerySchema = z.object({ ...publicQuerySchemaShape, ...baseQuerySchemaShape })
-  const createSchema = insertSchema.omit({ id: true }).openapi({ title, description: `The data to create a new ${name} with` })
-  const replaceSchema = insertSchema.required({ id: true }).openapi({ title, description: `The data to replace a ${name} with` })
-  const updateSchema = insertSchema.required().partial().required({ id: true }).openapi({ title, description: `The data to update a ${name} with` })
-  const defaults = Object.fromEntries(Object.entries(insertSchema.shape)
-    .flatMap(([k, v]) => (v instanceof z.ZodOptional ? [[k, sqlDefault]] : []))) as SQLDefaults<z.infer<typeof createSchema>>
-  // eslint-disable-next-line max-len
-  return { schema, partialSchema, publicSchema, idSchema, queryIdSchema, querySchema, publicQuerySchema, createSchema, replaceSchema, updateSchema, defaults }
+  return <PublicMask extends TableMask>(schemaShape: InputSchemaShape, defaultMask: DefaultMask<T>, publicMask?: PublicMask) => {
+    type PublicSchema = typeof publicMask extends undefined ? Schema :
+      z.ZodObject<Pick<SchemaShape, Extract<keyof SchemaShape, keyof PublicMask>>>
+    type PublicQuerySchema = typeof publicMask extends undefined ? QuerySchema :
+      z.ZodObject<Pick<QuerySchemaShape, Extract<keyof QuerySchemaShape, keyof PublicMask>> & BaseQuerySchemaShape>
+
+    const title = titleCase(name)
+    const createdAt = z.coerce.date().openapi({ description: `The date the ${name} was created`, example: new Date(0) }) as z.ZodDate
+    const updatedAt = z.coerce.date().openapi({ description: `The date the ${name} was last updated`, example: new Date(0) }) as z.ZodDate
+    const baseSchemaShape = { ...schemaShape, createdAt, updatedAt } as SchemaShape
+    const baseSchema = z.object(baseSchemaShape) as Schema
+    const schema = baseSchema.openapi({ ref: title, title, description: `The data for a ${name}` }) as Schema
+    const partialSchema = baseSchema.partial().openapi({ title, description: `The data for a ${name}` }) as PartialSchema
+    const publicSchema = (publicMask === undefined ? baseSchema : baseSchema.pick(publicMask)).openapi({ title, description: `The public data for a ${name}` }) as PublicSchema
+    const idSchema = z.object(("id" in schemaShape ? { id: (schemaShape.id as z.ZodTypeAny) } : {}) as any) as IdSchema
+    const queryIdSchema = z.object({ ...idSchema.shape, ...fieldsSchema.shape } as any) as QueryIdSchema
+    const insertSchema = z.object(Object.fromEntries(Object.entries(schemaShape as any)
+      .filter(([k, _]) => !(k in metaColumnMask)).map(([k, v]) => (
+        [k, v instanceof z.ZodNullable || k in defaultMask ? (v as z.ZodTypeAny).optional() : v]))) as any) as InsertSchema
+    const querySchemaShape = Object.fromEntries(Object.entries(schema.shape as any)
+      .map(([k, v]) => [k, (v instanceof z.ZodNullable ? v.unwrap() : v).optional()])) as QuerySchemaShape
+    const querySchema = z.object({ ...querySchemaShape, ...baseQuerySchemaShape } as any) as QuerySchema
+    const publicQuerySchema = (publicMask === undefined ? querySchema :
+      z.object(querySchemaShape).pick(publicMask).extend(baseQuerySchemaShape)) as PublicQuerySchema
+    const createSchema = insertSchema.omit({ id: true }).openapi({ title, description: `The data to create a new ${name} with` }) as CreateSchema
+    const replaceSchema = insertSchema.required({ id: true }).openapi({ title, description: `The data to replace a ${name} with` }) as any as ReplaceSchema
+    const updateSchema = insertSchema.required().partial().required({ id: true }).openapi({ title, description: `The data to update a ${name} with` }) as any as UpdateSchema
+    const defaults = Object.fromEntries(Object.entries(insertSchema.shape as any)
+      .flatMap(([k, v]) => (v instanceof z.ZodOptional ? [[k, sqlDefault]] : []))) as Defaults
+    // eslint-disable-next-line max-len
+    return { schema, partialSchema, publicSchema, idSchema, queryIdSchema, querySchema, publicQuerySchema, createSchema, replaceSchema, updateSchema, defaults }
+  }
 }
 
 export const tableSchemas = <T extends TableWithMeta = never>(name: string) => <
   PublicMask extends { [_ in keyof T["_"]["columns"]]?: true },
 >(schemaShape: EnhancedOmit<BuildSelectSchema<T, {}>, keyof MetaColumns>,
     defaultMask: DefaultMask<T>, publicMask?: PublicMask) => {
-  const createdBy = z.string().openapi({ description: `The ID of the user the ${name} was created by`, example: "105b7lip5nqptbw" })
-  const updatedBy = z.string().openapi({ description: `The ID of the user the ${name} was last updated by`, example: "105b7lip5nqptbw" })
+  const createdBy = z.string().openapi({ description: `The ID of the user the ${name} was created by`, example: "105b7lip5nqptbw" }) as z.ZodString
+  const updatedBy = z.string().openapi({ description: `The ID of the user the ${name} was last updated by`, example: "105b7lip5nqptbw" }) as z.ZodString
   const createdBySchema = z.object({ createdBy })
   const updatedBySchema = z.object({ updatedBy })
-  const res = baseTableSchemas<T>(name)({ ...schemaShape, createdBy, updatedBy } as any, defaultMask, publicMask)
+  const res = baseTableSchemas<T>(name)<PublicMask>({ ...schemaShape, createdBy, updatedBy } as any, defaultMask, publicMask)
   return { createdBySchema, updatedBySchema, ...res }
 }
