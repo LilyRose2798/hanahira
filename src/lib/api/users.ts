@@ -1,7 +1,7 @@
 import { db } from "@/lib/db"
 import { whereConfig, paginationConfig, sortingConfig, fieldsConfig } from "@/lib/db/utils"
 import { KnownKeysOnly, eq } from "drizzle-orm"
-import { userDefaults, UserIdParams, UsernameParams, CreateUserParams, UpdateUserParams, QueryUserParams, QueryUsernameParams, QueryUserIdParams } from "@/lib/db/schemas/users"
+import { userDefaults, UserIdParams, UsernameParams, CreateUserParams, UpdateUserParams, QueryUserParams, QueryUsernameParams, QueryUserIdParams, ReplaceUserParams } from "@/lib/db/schemas/users"
 import { users } from "@/lib/db/tables/users"
 import { parseFound, parseCreated, parseFoundFirst, limit } from "@/lib/api/utils"
 
@@ -39,7 +39,7 @@ export const queryUserByUsername = ({ username, fields }: QueryUsernameParams) =
 export const createUser = (user: CreateUserParams) => db.insert(users)
   .values(user).returning().execute().then(parseCreated)
 
-export const replaceUser = ({ id, ...user }: UpdateUserParams) => db.update(users)
+export const replaceUser = ({ id, ...user }: ReplaceUserParams) => db.update(users)
   .set({ ...userDefaults, ...user, updatedAt: new Date() }).where(eq(users.id, id)).returning().execute().then(parseFoundFirst)
 
 export const updateUser = ({ id, ...user }: UpdateUserParams) => db.update(users)
