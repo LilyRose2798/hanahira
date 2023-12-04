@@ -8,37 +8,15 @@ import { getUrl } from "@/lib/trpc/utils"
 import { redirect } from "next/navigation"
 import { toast } from "sonner"
 
-const handleUnauthorizedErrorsOnClient = (error: unknown): boolean => {
-  if (typeof window === "undefined") return false
-  if (!(error instanceof TRPCClientError)) return false
-  if (error.data?.code !== "UNAUTHORIZED") return false
-  redirect("/sign-in")
-  // return true
+const onError = (err: unknown) => {
+  if (typeof window === "undefined") return
+  if (!(err instanceof TRPCClientError)) return
+  if (err.data?.code === "UNAUTHORIZED") redirect("/sign-in")
+  toast.error(err.message)
 }
 
 export const TrpcProvider = ({ children, cookies }: { children: React.ReactNode, cookies: string }) => {
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        onError: err => {
-          toast.error("Woops")
-        },
-        retry: (failureCount, error) => {
-          if (handleUnauthorizedErrorsOnClient(error)) return false
-          return failureCount < 3
-        },
-      },
-      mutations: {
-        onError: err => {
-          toast.error("Woops")
-        },
-        retry: (_, error) => {
-          handleUnauthorizedErrorsOnClient(error)
-          return false
-        },
-      },
-    },
-  }))
+  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { onError }, mutations: { onError } } }))
   const [trpcClient] = useState(() => trpc.createClient({
     transformer: SuperJSON,
     links: [
