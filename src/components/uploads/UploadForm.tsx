@@ -25,7 +25,7 @@ export const UploadForm = ({ uploadComplete, adding = false }: {
       const data = await res.json()
       if (res.status !== 200) {
         const e = data as APIErrorResponse
-        if (e.issues) e.issues.forEach(e => toast.error(e.message))
+        if (e.issues && e.issues.length > 0) e.issues.forEach(e => toast.error(e.message))
         else toast.error(e.message)
         return
       }
