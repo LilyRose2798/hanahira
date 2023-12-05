@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server"
+import { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
 
 export const parseFound = <T>(x: T | undefined) => {
   if (!x) throw new TRPCError({ code: "NOT_FOUND", message: "Not found" })
@@ -14,3 +15,9 @@ export const parseCreated = <T>(x: T[]) => {
 }
 
 export const limit = 50
+
+export type APIErrorResponse = {
+  code: TRPC_ERROR_CODE_KEY
+  message: string
+  issues?: { message: string }[]
+}

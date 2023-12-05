@@ -2,20 +2,24 @@ import { AnyColumn, InferInsertModel, InferSelectModel, Table } from "drizzle-or
 import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
 import { UserMetaColumns, TimestampMetaColumns, MetaColumns, TableWithTimestampMeta, TableWithMeta } from "@/lib/db/tables/utils"
-import { EnhancedOmit, titleCase } from "@/lib/utils"
+import { EnhancedOmit, titleCase, humanFileSize } from "@/lib/utils"
 import { BuildInsertSchema, BuildSelectSchema } from "drizzle-zod"
 import { SQLDefaults, sqlDefault } from "@/lib/db/utils"
-
 extendZodWithOpenApi(z)
 
-export const maxAllowedFileSize = 100 * 1024 * 1024
-export const fileListSchema = z
-  .custom<File>(x => x instanceof File, "Invalid file provided").array()
+export const maxFileSize = 1 * 1024 * 1024
+export const humanMaxFileSize = humanFileSize(maxFileSize)
+export const maxFileCount = 50
+export const maxTotalFileSize = 4 * 1024 * 1024
+export const humanMaxTotalFileSize = humanFileSize(maxTotalFileSize)
+export const fileSchema = z
+  .custom<File>(x => x instanceof File, "Invalid file provided")
+  .refine(x => x.size > 0, "File cannot be empty")
+  .refine(x => x.size <= maxFileSize, `File cannot be greater than ${humanMaxFileSize} in size`)
+export const fileListSchema = fileSchema.array()
   .refine(x => x.length > 0, "No files provided")
-  .refine(x => x.length <= 50, "Maximum of 50 files are allowed")
-  .refine(x => x.every(x => x.size > 0), "No file can be empty")
-  .refine(x => x.every(x => x.size <= maxAllowedFileSize), "Size of each file must be 100MB or lower")
-  .refine(x => x.reduce((a, x) => a + x.size, 0) < maxAllowedFileSize, "Total size of all files must be 100MB or lower")
+  .refine(x => x.length <= maxFileCount, `Maximum of ${maxFileCount} files are allowed`)
+  .refine(x => x.reduce((a, x) => a + x.size, 0) < maxTotalFileSize, `Total size of all files cannot be greater than ${humanMaxTotalFileSize}`)
 
 export const numericStringSchema = z.string().regex(/^d+$/, "Characters other than digits found in string").transform(x => parseInt(x, 10))
 

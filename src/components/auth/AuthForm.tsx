@@ -29,10 +29,8 @@ export const AuthForm = ({ isSignUp = false }: {
     router.refresh()
   }
 
-  const onError = (e: { message: string }) => toast.error(e.message)
-
-  const { mutate: signIn, isLoading: isSigningIn } = trpc.signIn.useMutation({ onSuccess, onError })
-  const { mutate: signUp, isLoading: isSigningUp } = trpc.signUp.useMutation({ onSuccess, onError })
+  const { mutate: signIn, isLoading: isSigningIn } = trpc.signIn.useMutation({ onSuccess })
+  const { mutate: signUp, isLoading: isSigningUp } = trpc.signUp.useMutation({ onSuccess })
 
   return (
     <Form {...form}>

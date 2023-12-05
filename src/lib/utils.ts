@@ -4,7 +4,7 @@ import { twMerge } from "tailwind-merge"
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs))
 export const nullToUndef = <T>(x: T): T & {} | undefined => (x !== null ? x : undefined)
 export const titleCase = (name: string) => name.split(" ").map(x => `${x[0].toUpperCase()}${x.substring(1)}`).join(" ")
-
+export const truncate = (val: string, len: number) => (val.length <= len ? val : `${val.slice(0, len - 3)}...`)
 export const humanFileSize = (bytes: number, si = false, dp = 1) => {
   const thresh = si ? 1000 : 1024
   if (Math.abs(bytes) < thresh) `${bytes} B`

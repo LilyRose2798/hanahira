@@ -40,11 +40,10 @@ export const PostForm = ({ upload, post, uploadDeleted, setPost, submitRef, dele
     toast.success(`Post ${action}ted`)
     setPost?.(action === "dele" ? undefined : post)
   }
-  const onError = (e: { message: string }) => toast.error(e.message)
 
-  const { mutate: createPost, isLoading: isCreating } = trpc.posts.create.useMutation({ onSuccess: onSuccess("crea"), onError })
-  const { mutate: updatePost, isLoading: isUpdating } = trpc.posts.update.useMutation({ onSuccess: onSuccess("upda"), onError })
-  const { mutate: deletePost, isLoading: isDeletingPost } = trpc.posts.delete.useMutation({ onSuccess: onSuccess("dele"), onError })
+  const { mutate: createPost, isLoading: isCreating } = trpc.posts.create.useMutation({ onSuccess: onSuccess("crea") })
+  const { mutate: updatePost, isLoading: isUpdating } = trpc.posts.update.useMutation({ onSuccess: onSuccess("upda") })
+  const { mutate: deletePost, isLoading: isDeletingPost } = trpc.posts.delete.useMutation({ onSuccess: onSuccess("dele") })
   const { mutate: deleteUpload, isLoading: isDeletingUpload } = trpc.uploads.delete.useMutation({
     onSuccess: upload => {
       utils.uploads.query.invalidate()

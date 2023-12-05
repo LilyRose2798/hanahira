@@ -18,11 +18,10 @@ export const findUploadById = <T extends UploadIdParams & FindUploadParams>(
     .findFirst({ where: (uploads, { eq }) => eq(uploads.id, id), ...config }).execute().then(parseFound)
 
 export const findUploadsByIdsCreatedBy = <T extends { ids: UploadIdParams["id"][] } & UploadCreatedByParams & FindUploadsParams>(
-  { ids, createdBy, limit, ...config }: KnownKeysOnly<T, { ids: UploadIdParams["id"][] } & UploadCreatedByParams & FindUploadsParams>) => db.query.uploads.findMany({
+  { ids, createdBy, limit, ...config }: KnownKeysOnly<T, { ids: UploadIdParams["id"][] } & UploadCreatedByParams & FindUploadsParams>) => (ids.length > 0 ? db.query.uploads.findMany({
     where: (uploads, { and, eq, inArray }) => and(eq(uploads.createdBy, createdBy), inArray(uploads.id, ids)),
     ...config,
-  }).execute().then(parseFound)
-
+  }).execute().then(parseFound) : Promise.resolve([]))
 export const findUploadsCreatedBy = <T extends UploadCreatedByParams & FindUploadsParams>(
   { createdBy, limit, ...config }: KnownKeysOnly<T, UploadCreatedByParams & FindUploadsParams>) => db.query.uploads
     .findMany({ where: (uploads, { eq }) => eq(uploads.createdBy, createdBy), ...config }).execute().then(parseFound)

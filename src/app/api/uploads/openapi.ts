@@ -1,5 +1,5 @@
 import { uploadSchema } from "@/lib/db/schemas/uploads"
-import { errorResponseFromMessage, errorResponseFromStatusCode } from "@lilyrose2798/trpc-openapi"
+import { errorResponseFromMessage } from "@lilyrose2798/trpc-openapi"
 import { ZodOpenApiPathsObject } from "zod-openapi"
 
 export const openApiUploadPath: ZodOpenApiPathsObject = {
@@ -42,7 +42,8 @@ export const openApiUploadPath: ZodOpenApiPathsObject = {
           },
         },
         400: errorResponseFromMessage(400, "Invalid file data provided"),
-        500: errorResponseFromStatusCode(500),
+        401: errorResponseFromMessage(401, "Not signed in"),
+        500: errorResponseFromMessage(500, "Unexpected server error"),
       },
     },
   },

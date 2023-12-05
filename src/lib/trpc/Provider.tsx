@@ -5,18 +5,22 @@ import React, { useState } from "react"
 import { trpc } from "@/lib/trpc/client"
 import SuperJSON from "superjson"
 import { getUrl } from "@/lib/trpc/utils"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-
-const onError = (err: unknown) => {
-  if (typeof window === "undefined") return
-  if (!(err instanceof TRPCClientError)) return
-  if (err.data?.code === "UNAUTHORIZED") redirect("/sign-in")
-  toast.error(err.message)
-}
+import { AppRouter } from "@/lib/trpc/routers"
 
 export const TrpcProvider = ({ children, cookies }: { children: React.ReactNode, cookies: string }) => {
-  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { onError }, mutations: { onError } } }))
+  const router = useRouter()
+  const [retry] = useState(() => (failureCount: number, err: unknown) => {
+    if (typeof window === "undefined") return false
+    if (!(err instanceof TRPCClientError)) return false
+    const e = err as TRPCClientError<AppRouter>
+    if (e.data?.httpStatus && e.data.httpStatus >= 500 && failureCount < 4) return true
+    toast.error(e.message)
+    if (e.data?.code === "UNAUTHORIZED") router.push("/sign-in")
+    return false
+  })
+  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { retry }, mutations: { retry } } }))
   const [trpcClient] = useState(() => trpc.createClient({
     transformer: SuperJSON,
     links: [

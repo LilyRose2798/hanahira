@@ -12,14 +12,6 @@ export const SignOutBtn = ({ plain = false }) => {
     onSuccess: () => {
       toast.success("Signed out")
       router.push("/sign-in")
-      router.refresh()
-    },
-    onError: e => {
-      if (e.data?.httpStatus === 401) {
-        toast.error("Already signed out")
-        router.push("/sign-in")
-        router.refresh()
-      } else toast.error(e.message)
     },
   })
 

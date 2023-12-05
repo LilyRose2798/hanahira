@@ -16,7 +16,7 @@ const t = initTRPC.context<Context>().meta<OpenApiMeta>().create({
     ...shape,
     data: {
       ...shape.data,
-      zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
+      ...(error.cause instanceof ZodError ? { zodError: error.cause } : {}),
     },
   }),
 })

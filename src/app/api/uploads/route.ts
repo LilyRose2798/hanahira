@@ -14,6 +14,9 @@ import { PNG } from "pngjs"
 import { decode as decodeWebp } from "@jsquash/webp"
 import decodeGif from "decode-gif"
 import { authErrorHandle } from "@/lib/trpc/utils"
+import { truncate } from "@/lib/utils"
+import { Upload } from "@/lib/db/schemas/uploads"
+import { APIErrorResponse } from "@/lib/api/utils"
 
 const createHashCreator = (algorithm: string) => (buffer: Buffer) => createHash(algorithm, { encoding: "hex" }).update(buffer).digest("hex")
 const createMD5Hash = createHashCreator("md5")
@@ -31,14 +34,23 @@ const decoders: Partial<Record<FileExtension, (buffer: Buffer) => DecodedData | 
   },
 }
 
-export const POST = async (req: NextRequest) => {
+export const POST = async (req: NextRequest): Promise<NextResponse<Upload[] | APIErrorResponse>> => {
   try {
     const user = await api.account.find.current.query().catch(authErrorHandle)
     if (!user) return NextResponse.json({ code: "UNAUTHORIZED", message: "Not signed in" }, { status: 401 })
     const createdBy = user.id
     const formData = await req.formData()
-    const filesRes = fileListSchema.safeParse(formData.getAll("files"))
-    if (!filesRes.success) return NextResponse.json({ code: "BAD_REQUEST", message: filesRes.error.issues.map(x => x.message).join(", ") }, { status: 400 })
+    const filesField = formData.getAll("files")
+    const filesRes = fileListSchema.safeParse(filesField)
+    if (!filesRes.success) return NextResponse.json({
+      code: "BAD_REQUEST",
+      message: "Invalid file data provided",
+      issues: filesRes.error.issues.map(e => ({
+        message: (e.path.length > 0 ? (f => (f instanceof File ?
+          `${e.message} (${truncate(f.name, 32)})` : e.message)
+        )(filesField[+e.path[0]]) : e.message),
+      })),
+    }, { status: 400 })
     return NextResponse.json(await Promise.all(filesRes.data.map(async file => {
       const { size, name: originalName, type: originalMime } = file
       const originalExtension = extname(originalName).substring(1) || undefined

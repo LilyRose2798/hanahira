@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
-import { maxAllowedFileSize, tableSchemas } from "@/lib/db/schemas/utils"
+import { maxFileSize, tableSchemas } from "@/lib/db/schemas/utils"
 import { UploadsTable } from "@/lib/db/tables/uploads"
 
 extendZodWithOpenApi(z)
@@ -31,7 +31,7 @@ export const {
   blockHash: z.string().openapi({ description: "The upload's perceptual block hash", example: "0773063f063f36070e070a070f378e7f1f000fff0fff020103f00ffb0f810ff0" }).nullable(),
   width: z.number().int().min(1).max(2 ** 31 - 1).openapi({ description: "The upload's width", example: 1920 }).nullable(),
   height: z.number().int().min(1).max(2 ** 31 - 1).openapi({ description: "The upload's height", example: 1080 }).nullable(),
-  size: z.number().int().min(1).max(maxAllowedFileSize).openapi({ description: "The upload's file size in bytes", example: 102842 }),
+  size: z.number().int().min(1).max(maxFileSize).openapi({ description: "The upload's file size in bytes", example: 102842 }),
 }, {})
 
 export type Upload = z.infer<typeof uploadSchema>

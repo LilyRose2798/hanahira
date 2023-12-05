@@ -41,7 +41,7 @@ export const NewUploadForm = ({ initialUploads = [] }: { initialUploads?: Upload
     {hasUploads && <ul>
       {uploads.map(upload => <PostFormListItem key={upload.id} upload={upload} uploadRefMap={uploadRefMap} uploadDeleted={remUpload} />)}
     </ul>}
-    <UploadForm uploadComplete={addUploads} filesLabel={hasUploads ? "Add Files" : "Files"} />
+    <UploadForm uploadComplete={addUploads} adding={hasUploads} />
     {hasUploads && <div>
       <Button className="my-6 mr-2" type="button" onClick={() => [...uploadRefMap.values()].map(x => x.submit.current?.click())}>Save All Posts</Button>
       <Button className="mr-2" type="button" variant="destructive" onClick={() => [...uploadRefMap.values()].map(x => x.deleteUpload.current?.click())}>Delete All Uploads</Button>

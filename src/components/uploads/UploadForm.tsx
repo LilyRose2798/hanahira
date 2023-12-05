@@ -1,25 +1,16 @@
 "use client"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { useMutation } from "@tanstack/react-query"
-import { z } from "zod"
-import { fileListSchema, maxAllowedFileSize } from "@/lib/db/schemas/utils"
-import { Upload, uploadSchema } from "@/lib/db/schemas/uploads"
-import { humanFileSize } from "@/lib/utils"
+import { fileListSchema, humanMaxFileSize, maxFileCount, humanMaxTotalFileSize } from "@/lib/db/schemas/utils"
+import { Upload } from "@/lib/db/schemas/uploads"
 import { useRef } from "react"
+import { useDropzone } from "react-dropzone"
+import { truncate } from "@/lib/utils"
+import { APIErrorResponse } from "@/lib/api/utils"
 
-export const UploadForm = ({ uploadComplete, filesLabel = "Files" }: {
-  uploadComplete?: (uploads: Upload[]) => void, filesLabel?: string }) => {
+export const UploadForm = ({ uploadComplete, adding = false }: {
+  uploadComplete?: (uploads: Upload[]) => void, adding: boolean }) => {
   const fileInputRef = useRef<HTMLInputElement>()
-
-  const schema = z.object({ files: fileListSchema })
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
-  })
 
   const { mutate, isLoading } = useMutation({
     mutationFn: async ({ files }: { files: File[] }) => {
@@ -32,35 +23,40 @@ export const UploadForm = ({ uploadComplete, filesLabel = "Files" }: {
     },
     onSuccess: async res => {
       const data = await res.json()
-      if (res.status !== 200) throw new Error(String(data.message ?? "Unknown error occurred"))
-      const uploads = uploadSchema.array().parse(data)
+      if (res.status !== 200) {
+        const e = data as APIErrorResponse
+        if (e.issues) e.issues.forEach(e => toast.error(e.message))
+        else toast.error(e.message)
+        return
+      }
+      const uploads = data as Upload[]
       toast.success(`File${uploads.length > 0 ? "s" : ""} successfully uploaded`)
-      form.reset()
       if (fileInputRef.current) fileInputRef.current.value = ""
       uploadComplete?.(uploads)
     },
-    onError: e => toast.error(e instanceof Error ? e.message : "Unknown error occurred"),
+    onError: e => (e instanceof Error ? toast.error(e.message) : toast.error("Unexpected error occurred")),
+  })
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: files => {
+      const res = fileListSchema.safeParse(files)
+      if (res.success) mutate({ files: res.data })
+      else res.error.issues.forEach(e => toast.error(e.path.length > 0 ?
+        `${e.message} (${truncate(files[+e.path[0]].name, 32)})` : e.message))
+    },
   })
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(x => mutate(x))} className={"space-y-8"}>
-        <FormField control={form.control} name="files" render={({ field: { value, onChange, ref, ...field } }) => (
-          <FormItem>
-            <FormLabel>{filesLabel}</FormLabel>
-            <FormControl>
-              <Input {...field} ref={e => {
-                ref(e)
-                fileInputRef.current = e ?? undefined
-              }} type="file" multiple={true} onChange={e => onChange([...e.target.files ?? []])} />
-            </FormControl>
-            <FormDescription>Maximum file size: {humanFileSize(maxAllowedFileSize, false, 0)}</FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}/>
-        <Button type="submit" disabled={isLoading}>Upload{isLoading ? "ing Files..." : " Files"}</Button>
-      </form>
-    </Form>
+    <div {...getRootProps({ className: `border border-input border-solid rounded-md text-sm p-6 ${isLoading ? "opacity-50" : "cursor-pointer"}` })}>
+      <input {...getInputProps({ disabled: isLoading })} />
+      <p className="text-center">{isLoading ? "Uploading..." : isDragActive ?
+        "Drop the files here..." :
+        `Drag and drop or click here to ${adding ? "add some more" : "select some"} files`}
+      </p>
+      <p className="text-center text-muted-foreground mt-2">Max file size: {humanMaxFileSize}</p>
+      <p className="text-center text-muted-foreground">Max file count: {maxFileCount}</p>
+      <p className="text-center text-muted-foreground">Max total file size: {humanMaxTotalFileSize}</p>
+    </div>
   )
 }
 
