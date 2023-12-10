@@ -1,12 +1,11 @@
 import { postRatingName } from "@/lib/db/enums/post-rating"
 import { postStatusName } from "@/lib/db/enums/post-status"
 import { PostWithUpload } from "@/lib/db/schemas/posts"
-import Image from "next/image"
+import Upload from "@/components/uploads/Upload"
 
 const Post = ({ post }: { post: PostWithUpload }) => (
   <div className="w-full">
-    <h2 className="text-l font-semibold">{post.upload.originalName}</h2>
-    <Image className="my-4" alt="" src={post.upload.location} width={300} height={300} />
+    <Upload upload={post.upload} />
     <p>Description: {post.description ?? "(No description set)"}</p>
     <p>Source URL: {post.sourceUrl ?? "(No source URL set)"}</p>
     <p>Rating: {postRatingName(post.rating)}</p>

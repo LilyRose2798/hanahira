@@ -12,7 +12,7 @@ import { z } from "zod"
 import { postRatingName, postRatings } from "@/lib/db/enums/post-rating"
 import { Upload } from "@/lib/db/schemas/uploads"
 import { Ref } from "react"
-import Image from "next/image"
+import UploadComp from "@/components/uploads/Upload"
 import Link from "next/link"
 
 export const PostForm = ({ upload, post, uploadDeleted, setPost, submitRef, deleteUploadRef, deletePostRef }: {
@@ -61,8 +61,7 @@ export const PostForm = ({ upload, post, uploadDeleted, setPost, submitRef, dele
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(p => (editing ? updatePost({ ...p, id: post.id }) : createPost({ ...p, uploadId: upload.id })))} className={"space-y-8"}>
-        <h2 className="text-l font-semibold">{upload.originalName}</h2>
-        <Image className="my-4" alt="" src={upload.location} width={300} height={300} />
+        <UploadComp upload={upload} />
         <FormField control={form.control} name="description" render={({ field }) => (
           <FormItem>
             <FormLabel>Description</FormLabel>
