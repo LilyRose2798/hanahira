@@ -24,7 +24,7 @@ export const AccountCardFooter = ({ description, children }: {
   description: string
 }) => (
   <div
-    className="bg-primary-foreground dark:bg-slate-900 dark:border-slate-800 p-4 border border-zinc-200 flex justify-between items-center"
+    className="bg-primary-foreground p-4 border flex justify-between items-center"
     id="footer">
     <p className="text-muted-foreground text-sm">{description}</p>
     {children}

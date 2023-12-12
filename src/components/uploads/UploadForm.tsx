@@ -60,7 +60,7 @@ export const UploadForm = ({ uploadComplete, adding = false }: {
   return (
     <div {...getRootProps({ className: `relative border border-input border-solid rounded-md text-sm p-6 ${isLoading ? "" : "cursor-pointer"}` })}>
       <input {...getInputProps({ disabled: isLoading })} />
-      {isLoading && <progress max={1} value={uploadProgress} className="absolute inset-0 w-full h-full m-0 p-0 -z-50 [&::-webkit-progress-bar]:rounded-md [&::-webkit-progress-value]:rounded-md [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-[hsl(var(--input))]"></progress>}
+      {isLoading && <progress max={1} value={uploadProgress} className="absolute inset-0 w-full h-full m-0 p-0 -z-50 [&::-webkit-progress-bar]:rounded-md [&::-webkit-progress-value]:rounded-md [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-input"></progress>}
       <p className="text-center">{isLoading ? (uploadProgress === 1 ?
         "Uploading 100% completed! Processing uploads..." :
         `Uploading ${Math.round(uploadProgress * 100)}% completed...`

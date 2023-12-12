@@ -11,10 +11,10 @@ const Profile = async () => {
   return (
     <section className="container">
       <h1 className="text-2xl font-semibold my-6">Profile</h1>
-      <pre className="bg-slate-100 dark:bg-slate-800 p-6 rounded-lg my-2">
+      <pre className="bg-primary-foreground p-6 rounded-lg my-2">
         {JSON.stringify(user.session, null, 2)}
       </pre>
-      <pre className="bg-slate-100 dark:bg-slate-800 p-6 rounded-lg my-2">
+      <pre className="bg-primary-foreground p-6 rounded-lg my-2">
         {JSON.stringify(user, null, 2)}
       </pre>
       <SignOutBtn />
