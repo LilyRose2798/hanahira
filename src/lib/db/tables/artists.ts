@@ -1,6 +1,6 @@
 import { pgTable, primaryKey, text } from "drizzle-orm/pg-core"
-import { idColumn, metaColumns, userMetaRelations } from "@/lib/db/tables/utils"
-import { relations } from "drizzle-orm"
+import { idColumn } from "@/lib/db/tables/utils"
+import { metaColumns } from "@/lib/db/tables/users"
 
 export const artists = pgTable("artist", {
   ...idColumn,
@@ -23,19 +23,3 @@ export const artistLinks = pgTable("artist_link", {
   ...metaColumns,
 })
 export type ArtistLinksTable = typeof artistLinks
-
-export const artistAliasesRelations = relations(artistAliases, ({ one }) => ({
-  artist: one(artists, { fields: [artistAliases.artistId], references: [artists.id] }),
-  ...userMetaRelations(artistAliases)({ one }),
-}))
-
-export const artistLinksRelations = relations(artistLinks, ({ one }) => ({
-  artist: one(artists, { fields: [artistLinks.artistId], references: [artists.id] }),
-  ...userMetaRelations(artistLinks)({ one }),
-}))
-
-export const artistRelations = relations(artists, ({ one, many }) => ({
-  aliases: many(artistAliases),
-  links: many(artistLinks),
-  ...userMetaRelations(artists)({ one }),
-}))

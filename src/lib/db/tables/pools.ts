@@ -1,7 +1,7 @@
 import { integer, pgTable, primaryKey, text, uniqueIndex } from "drizzle-orm/pg-core"
-import { idColumn, metaColumns, userMetaRelations } from "@/lib/db/tables/utils"
+import { idColumn } from "@/lib/db/tables/utils"
+import { metaColumns } from "@/lib/db/tables/users"
 import { posts } from "@/lib/db/tables/posts"
-import { relations } from "drizzle-orm"
 
 export const pools = pgTable("pool", {
   ...idColumn,
@@ -23,14 +23,3 @@ export const poolPosts = pgTable("pool_post", {
   poolIdIndexIdx: uniqueIndex().on(table.poolId, table.index),
 }))
 export type PoolPostsTable = typeof poolPosts
-
-export const poolPostRelations = relations(poolPosts, ({ one }) => ({
-  pool: one(pools, { fields: [poolPosts.poolId], references: [pools.id] }),
-  post: one(posts, { fields: [poolPosts.postId], references: [posts.id] }),
-  ...userMetaRelations(poolPosts)({ one }),
-}))
-
-export const poolRelations = relations(pools, ({ one, many }) => ({
-  posts: many(poolPosts),
-  ...userMetaRelations(pools)({ one }),
-}))

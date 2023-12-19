@@ -1,7 +1,7 @@
 import { db } from "@/lib/db"
 import { whereConfig, paginationConfig, sortingConfig, fieldsConfig } from "@/lib/db/utils"
 import { KnownKeysOnly, eq } from "drizzle-orm"
-import { uploadDefaults, UploadIdParams, UploadCreatedByParams, UploadUpdatedByParams, CreateUploadParams, ReplaceUploadParams, UpdateUploadParams, QueryUploadsParams, QueryUploadIdParams } from "@/lib/db/schemas/uploads"
+import { uploadDefaults, UploadIdParams, UploadsCreatedByParams, UploadsUpdatedByParams, CreateUploadParams, ReplaceUploadParams, UpdateUploadParams, QueryUploadsParams, QueryUploadIdParams } from "@/lib/db/schemas/uploads"
 import { uploads } from "@/lib/db/tables/uploads"
 import { parseFound, parseCreated, parseFoundFirst, limit } from "@/lib/api/utils"
 import { UsernameParams, QueryCreatedByIdParams, QueryCreatedByUsernameParams } from "@/lib/db/schemas/users"
@@ -17,13 +17,13 @@ export const findUploadById = <T extends UploadIdParams & FindUploadParams>(
   { id, ...config }: KnownKeysOnly<T, UploadIdParams & FindUploadParams>) => db.query.uploads
     .findFirst({ where: (uploads, { eq }) => eq(uploads.id, id), ...config }).execute().then(parseFound)
 
-export const findUploadsByIdsCreatedBy = <T extends { ids: UploadIdParams["id"][] } & UploadCreatedByParams & FindUploadsParams>(
-  { ids, createdBy, limit, ...config }: KnownKeysOnly<T, { ids: UploadIdParams["id"][] } & UploadCreatedByParams & FindUploadsParams>) => (ids.length > 0 ? db.query.uploads.findMany({
+export const findUploadsByIdsCreatedBy = <T extends { ids: UploadIdParams["id"][] } & UploadsCreatedByParams & FindUploadsParams>(
+  { ids, createdBy, limit, ...config }: KnownKeysOnly<T, { ids: UploadIdParams["id"][] } & UploadsCreatedByParams & FindUploadsParams>) => (ids.length > 0 ? db.query.uploads.findMany({
     where: (uploads, { and, eq, inArray }) => and(eq(uploads.createdBy, createdBy), inArray(uploads.id, ids)),
     ...config,
   }).execute().then(parseFound) : Promise.resolve([]))
-export const findUploadsCreatedBy = <T extends UploadCreatedByParams & FindUploadsParams>(
-  { createdBy, limit, ...config }: KnownKeysOnly<T, UploadCreatedByParams & FindUploadsParams>) => db.query.uploads
+export const findUploadsCreatedBy = <T extends UploadsCreatedByParams & FindUploadsParams>(
+  { createdBy, limit, ...config }: KnownKeysOnly<T, UploadsCreatedByParams & FindUploadsParams>) => db.query.uploads
     .findMany({ where: (uploads, { eq }) => eq(uploads.createdBy, createdBy), ...config }).execute().then(parseFound)
 
 export const findUploadsCreatedByUsername = <T extends UsernameParams & FindUploadsParams>(
@@ -52,13 +52,13 @@ export const queryUploadsCreatedById = ({ id, fields, page, sort }: QueryCreated
 export const queryUploadsCreatedByUsername = ({ username, ...config }: QueryCreatedByUsernameParams) => (
   findUserByUsername({ username, columns: { id: true } }).then(({ id }) => queryUploadsCreatedById({ id, ...config })))
 
-export const createUpload = (upload: CreateUploadParams & UploadCreatedByParams) => db.insert(uploads)
+export const createUpload = (upload: CreateUploadParams & UploadsCreatedByParams) => db.insert(uploads)
   .values({ ...upload, updatedBy: upload.createdBy }).returning().execute().then(parseCreated)
 
-export const replaceUpload = ({ id, ...upload }: ReplaceUploadParams & UploadUpdatedByParams) => db.update(uploads)
+export const replaceUpload = ({ id, ...upload }: ReplaceUploadParams & UploadsUpdatedByParams) => db.update(uploads)
   .set({ ...uploadDefaults, ...upload, updatedAt: new Date() }).where(eq(uploads.id, id)).returning().execute().then(parseFoundFirst)
 
-export const updateUpload = ({ id, ...upload }: UpdateUploadParams & UploadUpdatedByParams) => db.update(uploads)
+export const updateUpload = ({ id, ...upload }: UpdateUploadParams & UploadsUpdatedByParams) => db.update(uploads)
   .set({ ...upload, updatedAt: new Date() }).where(eq(uploads.id, id)).returning().execute().then(parseFoundFirst)
 
 export const deleteUpload = ({ id }: UploadIdParams) => db.delete(uploads)

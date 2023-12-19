@@ -1,21 +1,20 @@
 import { router as r, procedure as p } from "@/lib/trpc"
-import { hasAuth, hasRole, canEditUser } from "@/lib/trpc/middleware"
-import { invalidateAuthAndReturn } from "@/lib/lucia"
+import { hasAuthWithUser, hasRole, canEditUser } from "@/lib/trpc/middleware"
 import { userSchema, partialUserSchema, userIdSchema, createUserSchema, replaceUserSchema, updateUserSchema, queryUserSchema, queryUserIdSchema, queryCreatedByIdSchema } from "@/lib/db/schemas/users"
 import { partialPostSchema, postsCreatedBySchema } from "@/lib/db/schemas/posts"
 import { queryUsers, queryUserById, createUser, replaceUser, updateUser, deleteUser, findUsers, findUserById } from "@/lib/api/users"
 import { findPostsCreatedBy, queryPostsCreatedById } from "@/lib/api/posts"
-import { partialUploadSchema, uploadCreatedBySchema } from "@/lib/db/schemas/uploads"
+import { partialUploadSchema, uploadsCreatedBySchema } from "@/lib/db/schemas/uploads"
 import { findUploadsCreatedBy, queryUploadsCreatedById } from "@/lib/api/uploads"
 
 export const tags = ["Users"]
 
 export const usersRouter = r({
   find: r({
-    many: p.use(hasAuth).use(hasRole("SITE_MODERATOR")).query(async () => findUsers({})),
-    byId: p.use(hasAuth).use(hasRole("SITE_MODERATOR")).input(userIdSchema).query(async ({ input }) => findUserById(input)),
-    uploads: p.use(hasAuth).use(hasRole("SITE_MODERATOR")).input(uploadCreatedBySchema).query(async ({ input }) => findUploadsCreatedBy(input)),
-    posts: p.use(hasAuth).use(hasRole("SITE_MODERATOR")).input(postsCreatedBySchema).query(async ({ input }) => findPostsCreatedBy(input)),
+    many: p.use(hasAuthWithUser).use(hasRole("SITE_MODERATOR")).query(async () => findUsers({})),
+    byId: p.use(hasAuthWithUser).use(hasRole("SITE_MODERATOR")).input(userIdSchema).query(async ({ input }) => findUserById(input)),
+    uploads: p.use(hasAuthWithUser).use(hasRole("SITE_MODERATOR")).input(uploadsCreatedBySchema).query(async ({ input }) => findUploadsCreatedBy(input)),
+    posts: p.use(hasAuthWithUser).use(hasRole("SITE_MODERATOR")).input(postsCreatedBySchema).query(async ({ input }) => findPostsCreatedBy(input)),
   }),
   query: r({
     many: p
@@ -32,7 +31,7 @@ export const usersRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .use(hasAuth)
+      .use(hasAuthWithUser)
       .use(hasRole("SITE_MODERATOR"))
       .input(queryUserSchema)
       .output(partialUserSchema.array())
@@ -53,7 +52,7 @@ export const usersRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .use(hasAuth)
+      .use(hasAuthWithUser)
       .use(hasRole("SITE_MODERATOR"))
       .input(queryUserIdSchema)
       .output(partialUserSchema)
@@ -73,7 +72,7 @@ export const usersRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .use(hasAuth)
+      .use(hasAuthWithUser)
       .use(hasRole("SITE_MODERATOR"))
       .input(queryCreatedByIdSchema)
       .output(partialUploadSchema.array())
@@ -93,7 +92,7 @@ export const usersRouter = r({
           500: "Unexpected server error",
         },
       } })
-      .use(hasAuth)
+      .use(hasAuthWithUser)
       .use(hasRole("SITE_MODERATOR"))
       .input(queryCreatedByIdSchema)
       .output(partialPostSchema.array())
@@ -115,7 +114,7 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth)
+    .use(hasAuthWithUser)
     .use(hasRole("SITE_MODERATOR"))
     .input(createUserSchema)
     .output(userSchema)
@@ -137,11 +136,11 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth)
+    .use(hasAuthWithUser)
     .input(replaceUserSchema)
     .use(canEditUser)
     .output(userSchema)
-    .mutation(async ({ input }) => replaceUser(input).then(invalidateAuthAndReturn)),
+    .mutation(async ({ input }) => replaceUser(input)),
   update: p
     .meta({ openapi: {
       method: "PATCH",
@@ -159,11 +158,11 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth)
+    .use(hasAuthWithUser)
     .input(updateUserSchema)
     .use(canEditUser)
     .output(userSchema)
-    .mutation(async ({ input }) => updateUser(input).then(invalidateAuthAndReturn)),
+    .mutation(async ({ input }) => updateUser(input)),
   delete: p
     .meta({ openapi: {
       method: "DELETE",
@@ -181,9 +180,9 @@ export const usersRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth)
+    .use(hasAuthWithUser)
     .input(userIdSchema)
     .use(canEditUser)
     .output(userSchema)
-    .mutation(async ({ input }) => deleteUser(input).then(invalidateAuthAndReturn)),
+    .mutation(async ({ input }) => deleteUser(input)),
 })

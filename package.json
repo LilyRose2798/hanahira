@@ -45,7 +45,6 @@
     "drizzle-zod": "^0.5.1",
     "file-type": "^18.7.0",
     "jpeg-js": "^0.4.4",
-    "lucia": "^3.0.0-beta.9",
     "lucide-react": "^0.292.0",
     "nanoid": "^5.0.3",
     "next": "14.0.3",

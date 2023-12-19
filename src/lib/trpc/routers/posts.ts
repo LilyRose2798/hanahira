@@ -1,5 +1,5 @@
 import { router as r, procedure as p } from "@/lib/trpc"
-import { hasAuth, canEditPost } from "@/lib/trpc/middleware"
+import { hasAuthWithUser, canEditPost } from "@/lib/trpc/middleware"
 import { findPosts, queryPosts, queryPostById, createPost, replacePost, updatePost, deletePost, findPostById } from "@/lib/api/posts"
 import { postSchema, partialPostSchema, postIdSchema, queryPostIdSchema, queryPostsSchema, createPostSchema, replacePostSchema, updatePostSchema } from "@/lib/db/schemas/posts"
 
@@ -60,10 +60,10 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth)
+    .use(hasAuthWithUser)
     .input(createPostSchema)
     .output(postSchema)
-    .mutation(async ({ input, ctx: { user: { id: createdBy } } }) => (
+    .mutation(async ({ input, ctx: { session: { createdBy } } }) => (
       createPost({ ...input, createdBy }))),
   replace: p
     .meta({ openapi: {
@@ -82,11 +82,11 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth)
+    .use(hasAuthWithUser)
     .input(replacePostSchema)
     .use(canEditPost)
     .output(postSchema)
-    .mutation(async ({ input, ctx: { user: { id: updatedBy } } }) => (
+    .mutation(async ({ input, ctx: { session: { createdBy: updatedBy } } }) => (
       replacePost({ ...input, updatedBy }))),
   update: p
     .meta({ openapi: {
@@ -105,11 +105,11 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth)
+    .use(hasAuthWithUser)
     .input(updatePostSchema)
     .use(canEditPost)
     .output(postSchema)
-    .mutation(async ({ input, ctx: { user: { id: updatedBy } } }) => (
+    .mutation(async ({ input, ctx: { session: { createdBy: updatedBy } } }) => (
       updatePost({ ...input, updatedBy }))),
   delete: p
     .meta({ openapi: {
@@ -128,7 +128,7 @@ export const postsRouter = r({
         500: "Unexpected server error",
       },
     } })
-    .use(hasAuth)
+    .use(hasAuthWithUser)
     .input(postIdSchema)
     .use(canEditPost)
     .output(postSchema)

@@ -7,9 +7,31 @@
   },
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "togglequotes.chars": [
+      "\"",
+      "`"
+    ]
   },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "togglequotes.chars": [
+      "\"",
+      "`"
+    ]
+  },
+  "[typescriptreact]": {
+    "togglequotes.chars": [
+      "\"",
+      "`"
+    ]
+  },
+  "[javascriptreact]": {
+    "togglequotes.chars": [
+      "\"",
+      "`"
+    ]
   }
 }

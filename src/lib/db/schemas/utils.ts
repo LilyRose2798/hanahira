@@ -1,10 +1,12 @@
 import { AnyColumn, InferInsertModel, InferSelectModel, Table } from "drizzle-orm"
 import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
-import { UserMetaColumns, TimestampMetaColumns, MetaColumns, TableWithTimestampMeta, TableWithMeta } from "@/lib/db/tables/utils"
+import { TimestampMetaColumns, MetaColumns } from "@/lib/db/tables/users"
 import { EnhancedOmit, titleCase, humanFileSize } from "@/lib/utils"
 import { BuildInsertSchema, BuildSelectSchema } from "drizzle-zod"
 import { SQLDefaults, sqlDefault } from "@/lib/db/utils"
+import { TableWithColumns } from "@/lib/db/tables/utils"
+
 extendZodWithOpenApi(z)
 
 export const maxFileSize = 1 * 1024 * 1024
@@ -40,19 +42,11 @@ export const fieldsSchema = z.object({
 })
 export type FieldsParams = z.infer<typeof fieldsSchema>
 
-export const timestampMetaColumnMask = {
+export const metaColumnMask = {
   createdAt: true,
   updatedAt: true,
-} satisfies { [K in keyof TimestampMetaColumns]: true }
-
-export const userMetaColumnMask = {
   createdBy: true,
   updatedBy: true,
-} satisfies { [K in keyof UserMetaColumns]: true }
-
-export const metaColumnMask = {
-  ...timestampMetaColumnMask,
-  ...userMetaColumnMask,
 } satisfies { [K in keyof MetaColumns]: true }
 
 type OmitMeta<T> = EnhancedOmit<T, keyof MetaColumns>
@@ -86,7 +80,7 @@ const baseQuerySchemaShape = { ...paginationSchema.shape, ...sortingSchema.shape
 type BaseQuerySchemaShape = typeof baseQuerySchemaShape
 export const baseQuerySchema = z.object(baseQuerySchemaShape)
 
-export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name: string) => {
+export const baseTableSchemas = <T extends TableWithColumns<TimestampMetaColumns> = never>(name: string) => {
   type TableMask = { [_ in keyof T["_"]["columns"]]?: true }
   type SchemaShape = BuildSelectSchema<T, {}>
   type Schema = z.ZodObject<SchemaShape>
@@ -145,7 +139,7 @@ export const baseTableSchemas = <T extends TableWithTimestampMeta = never>(name:
   }
 }
 
-export const tableSchemas = <T extends TableWithMeta = never>(name: string) => <
+export const tableSchemas = <T extends TableWithColumns<MetaColumns> = never>(name: string) => <
   PublicMask extends { [_ in keyof T["_"]["columns"]]?: true },
 >(schemaShape: EnhancedOmit<BuildSelectSchema<T, {}>, keyof MetaColumns>,
     defaultMask: DefaultMask<T>, publicMask?: PublicMask) => {

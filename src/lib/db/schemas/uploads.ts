@@ -14,8 +14,8 @@ export const {
   createSchema: createUploadSchema,
   replaceSchema: replaceUploadSchema,
   updateSchema: updateUploadSchema,
-  createdBySchema: uploadCreatedBySchema,
-  updatedBySchema: uploadUpdatedBySchema,
+  createdBySchema: uploadsCreatedBySchema,
+  updatedBySchema: uploadsUpdatedBySchema,
   defaults: uploadDefaults,
 } = tableSchemas<UploadsTable>("upload")({
   id: z.string().openapi({ description: "The upload's ID", example: "jyfW7MDalrr" }),
@@ -42,5 +42,5 @@ export type QueryUploadsParams = z.infer<typeof queryUploadsSchema>
 export type CreateUploadParams = z.infer<typeof createUploadSchema>
 export type ReplaceUploadParams = z.infer<typeof replaceUploadSchema>
 export type UpdateUploadParams = z.infer<typeof updateUploadSchema>
-export type UploadCreatedByParams = z.infer<typeof uploadCreatedBySchema>
-export type UploadUpdatedByParams = z.infer<typeof uploadUpdatedBySchema>
+export type UploadsCreatedByParams = z.infer<typeof uploadsCreatedBySchema>
+export type UploadsUpdatedByParams = z.infer<typeof uploadsUpdatedBySchema>

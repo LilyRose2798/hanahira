@@ -64,7 +64,7 @@ export const uploadsRouter = r({
     .use(hasAuth)
     .input(replaceUploadSchema)
     .output(uploadSchema)
-    .mutation(async ({ input, ctx: { user: { id: updatedBy } } }) => (
+    .mutation(async ({ input, ctx: { session: { createdBy: updatedBy } } }) => (
       replaceUpload({ ...input, updatedBy }))),
   update: p
     .meta({ openapi: {
@@ -85,7 +85,7 @@ export const uploadsRouter = r({
     .use(hasAuth)
     .input(updateUploadSchema)
     .output(uploadSchema)
-    .mutation(async ({ input, ctx: { user: { id: updatedBy } } }) => (
+    .mutation(async ({ input, ctx: { session: { createdBy: updatedBy } } }) => (
       updateUpload({ ...input, updatedBy }))),
   delete: p
     .meta({ openapi: {

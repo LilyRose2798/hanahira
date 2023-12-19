@@ -1,7 +1,6 @@
 import { bigint, integer, pgTable, text } from "drizzle-orm/pg-core"
-import { idColumn, metaColumns, userMetaRelations } from "@/lib/db/tables/utils"
-import { posts } from "@/lib/db/tables/posts"
-import { relations } from "drizzle-orm"
+import { idColumn } from "@/lib/db/tables/utils"
+import { metaColumns } from "@/lib/db/tables/users"
 
 export const uploads = pgTable("upload", {
   ...idColumn,
@@ -21,8 +20,3 @@ export const uploads = pgTable("upload", {
   ...metaColumns,
 })
 export type UploadsTable = typeof uploads
-
-export const uploadRelations = relations(uploads, ({ one, many }) => ({
-  posts: many(posts),
-  ...userMetaRelations(uploads)({ one }),
-}))

@@ -1,9 +1,8 @@
 import { router as r, procedure as p } from "@/lib/trpc"
-import { hasAuth } from "@/lib/trpc/middleware"
+import { hasAuth, hasAuthWithUser } from "@/lib/trpc/middleware"
 import { replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schemas/users"
 import { replaceUser, updateUser, deleteUser, queryUserById } from "@/lib/api/users"
 import { z } from "zod"
-import { invalidateAuthAndReturn } from "@/lib/lucia"
 import { partialUploadSchema, uploadIdSchema } from "@/lib/db/schemas/uploads"
 import { baseQuerySchema } from "@/lib/db/schemas/utils"
 import { partialPostSchema } from "@/lib/db/schemas/posts"
@@ -14,12 +13,12 @@ export const tags = ["Account"]
 
 export const accountRouter = r({
   find: r({
-    current: p.use(hasAuth).query(async ({ ctx: { user } }) => user),
-    currentWithSession: p.use(hasAuth).query(async ({ ctx: { user, session } }) => ({ ...user, session })),
-    uploads: p.use(hasAuth).query(async ({ ctx: { user: { id: createdBy } } }) => findUploadsCreatedBy({ createdBy })),
+    current: p.use(hasAuthWithUser).query(async ({ ctx: { session: { creator } } }) => creator),
+    currentWithSession: p.use(hasAuthWithUser).query(async ({ ctx: { session: { creator, ...session } } }) => ({ ...creator, session })),
+    uploads: p.use(hasAuth).query(async ({ ctx: { session: { createdBy } } }) => findUploadsCreatedBy({ createdBy })),
     uploadsByIds: p.use(hasAuth).input(z.object({ ids: uploadIdSchema.shape.id.array() }))
-      .query(async ({ input, ctx: { user: { id: createdBy } } }) => findUploadsByIdsCreatedBy({ ...input, createdBy })),
-    posts: p.use(hasAuth).query(async ({ ctx: { user: { id: createdBy } } }) => findPostsCreatedBy({ createdBy })),
+      .query(async ({ input, ctx: { session: { createdBy } } }) => findUploadsByIdsCreatedBy({ ...input, createdBy })),
+    posts: p.use(hasAuth).query(async ({ ctx: { session: { createdBy } } }) => findPostsCreatedBy({ createdBy })),
   }),
   query: r({
     current: p
@@ -40,7 +39,7 @@ export const accountRouter = r({
       .use(hasAuth)
       .input(z.void())
       .output(userSchema)
-      .query(async ({ ctx: { user: { id } } }) => queryUserById({ id })),
+      .query(async ({ ctx: { session: { id } } }) => queryUserById({ id })),
     uploads: p
       .meta({ openapi: {
         method: "GET",
@@ -59,7 +58,7 @@ export const accountRouter = r({
       .use(hasAuth)
       .input(baseQuerySchema)
       .output(partialUploadSchema.array())
-      .query(async ({ input, ctx: { user: { id } } }) => queryUploadsCreatedById({ id, ...input })),
+      .query(async ({ input, ctx: { session: { createdBy: id } } }) => queryUploadsCreatedById({ id, ...input })),
     posts: p
       .meta({ openapi: {
         method: "GET",
@@ -78,7 +77,7 @@ export const accountRouter = r({
       .use(hasAuth)
       .input(baseQuerySchema)
       .output(partialPostSchema.array())
-      .query(async ({ input, ctx: { user: { id } } }) => queryPostsCreatedById({ id, ...input })),
+      .query(async ({ input, ctx: { session: { createdBy: id } } }) => queryPostsCreatedById({ id, ...input })),
   }),
   replace: p
     .meta({ openapi: {
@@ -99,8 +98,8 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(replaceUserSchema.omit({ id: true }))
     .output(userSchema)
-    .mutation(async ({ input, ctx: { user: { id } } }) => (
-      replaceUser({ id, ...input }).then(invalidateAuthAndReturn))),
+    .mutation(async ({ input, ctx: { session: { createdBy: id } } }) => (
+      replaceUser({ id, ...input }))),
   update: p
     .meta({ openapi: {
       method: "PATCH",
@@ -120,8 +119,8 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(updateUserSchema.omit({ id: true }))
     .output(userSchema)
-    .mutation(async ({ input, ctx: { user: { id } } }) => (
-      updateUser({ id, ...input }).then(invalidateAuthAndReturn))),
+    .mutation(async ({ input, ctx: { session: { createdBy: id } } }) => (
+      updateUser({ id, ...input }))),
   delete: p
     .meta({ openapi: {
       method: "DELETE",
@@ -140,6 +139,6 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(z.void())
     .output(userSchema)
-    .mutation(async ({ ctx: { user: { id } } }) => (
-      deleteUser({ id }).then(invalidateAuthAndReturn))),
+    .mutation(async ({ ctx: { session: { createdBy: id } } }) => (
+      deleteUser({ id }))),
 })
