@@ -66,7 +66,7 @@ export const generateHOTP = async (key: OTPKey, { counter, digits = DEFAULT_OTP_
 
 const generateWindowOffsets = (window: number = 0) => (
   window < 0 ? raise("OTP window must be 0 or more") :
-    [0, ...[...Array(Math.abs(window))].map((_, i) => i + 1).flatMap(x => [x, -x])])
+    [...Array(window + 1)].flatMap((_, i) => [-i, i]).slice(1))
 
 export const verifyHOTP = async (hotp: string, key: OTPKey, { window, ...opts }: HOTPOpts & WindowOpts) => (
   someAsync(generateWindowOffsets(window), async offset => hotp === await generateHOTP(key, { ...opts, counter: opts.counter + offset })))
@@ -81,7 +81,7 @@ export const generateTOTPCounter = ({ period = DEFAULT_OTP_PERIOD, date = new Da
 export const generateTOTP = async (key: OTPKey, { period, date, offset = 0, ...opts }: TOTPOpts & DateOpts & OffsetOpts = {}) => (
   generateHOTP(key, { counter: generateTOTPCounter({ period, date }) + offset, ...opts }))
 
-export const verifyTOTP = async (totp: string, key: OTPKey, { window, ...opts }: TOTPOpts & WindowOpts = {}) => (
+export const verifyTOTP = async (totp: string, key: OTPKey, { window, ...opts }: TOTPOpts & DateOpts & WindowOpts = {}) => (
   someAsync(generateWindowOffsets(window), async offset => totp === await generateTOTP(key, { ...opts, offset })))
 
 export type OTPURIOpts = (HOTPOpts | TOTPOpts) & { issuer?: string } & ({} | { name: string } | { label: string, user: string })
@@ -108,8 +108,8 @@ export const parseOTPURL = async (url: string | URL) => {
   if (x.protocol !== "otpauth:") raise("Invalid OTP URL protocol")
   const name = decodeURIComponent(x.pathname.slice(1))
   const param = <T extends string, U = string>(name: T, parse?: (x: string) => U) => {
-    const param = x.searchParams.get(name)
-    return (param === null ? {} : { [name]: parse ? parse(param) : param }) as { [K in T]?: U }
+    const p = x.searchParams.get(name)
+    return (p === null ? {} : { [name]: parse ? parse(p) : p }) as { [K in T]?: U }
   }
   return {
     ...(x.hostname === "hotp" ? { type: "hotp" as const, ...param("counter", x => +x) } :
