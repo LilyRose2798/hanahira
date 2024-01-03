@@ -33,7 +33,7 @@ export const base32Decode = (data: string) => {
   return output.buffer
 }
 
-export type OTPKey = string | ArrayBuffer | CryptoKey
+export type OTPKey = string | ArrayBuffer
 export type OTPAlgorithm = "SHA-1" | "SHA-256" | "SHA-512"
 export type OTPOpts = { digits?: number, algorithm?: OTPAlgorithm }
 
@@ -54,9 +54,8 @@ export const generateHOTP = async (key: OTPKey, { counter, digits = DEFAULT_OTP_
   if (digits < 1) raise("OTP digits must be greater than 0")
   const counterArr = new ArrayBuffer(8)
   new DataView(counterArr).setBigUint64(0, BigInt(counter))
-  const cryptoKey = key instanceof CryptoKey ? key :
-    await crypto.subtle.importKey("raw", typeof key === "string" ?
-      base32Decode(key) : key, { name: "HMAC", hash: algorithm }, false, ["sign"])
+  const cryptoKey = await crypto.subtle.importKey("raw", typeof key === "string" ?
+    base32Decode(key) : key, { name: "HMAC", hash: algorithm }, false, ["sign"])
   const signedArr = await crypto.subtle.sign("HMAC", cryptoKey, counterArr)
   const offset = new Uint8Array(signedArr).at(-1)! & 15
   const num = new DataView(signedArr).getUint32(offset) & 0x7fffffff
@@ -86,15 +85,13 @@ export const verifyTOTP = async (totp: string, key: OTPKey, { window, ...opts }:
 
 export type OTPURIOpts = (HOTPOpts | TOTPOpts) & { issuer?: string } & ({} | { name: string } | { label: string, user: string })
 
-export const generateOTPURL = async (key: OTPKey, { digits, algorithm, issuer, ...opts }: OTPURIOpts = {}) => {
+export const generateOTPURL = (key: OTPKey, { digits, algorithm, issuer, ...opts }: OTPURIOpts = {}) => {
   const isHOTP = "counter" in opts
   const type = isHOTP ? "hotp" : "totp"
   const name = "name" in opts ? opts.name :
     "label" in opts ? `${opts.label ?? ""}:${opts.user ?? ""}` : ""
   const url = new URL(`otpauth://${type}/${name}`)
-  url.searchParams.set("secret", typeof key === "string" ? key :
-    base32Encode(key instanceof CryptoKey ?
-      await crypto.subtle.exportKey("raw", key) : key))
+  url.searchParams.set("secret", typeof key === "string" ? key : base32Encode(key))
   if (issuer !== undefined) url.searchParams.set("issuer", issuer)
   if (digits !== undefined) url.searchParams.set("digits", digits.toString())
   if (algorithm !== undefined) url.searchParams.set("algorithm", algorithm.replace("-", ""))
@@ -103,7 +100,7 @@ export const generateOTPURL = async (key: OTPKey, { digits, algorithm, issuer, .
   return url.toString()
 }
 
-export const parseOTPURL = async (url: string | URL) => {
+export const parseOTPURL = (url: string | URL) => {
   const x = new URL(url)
   if (x.protocol !== "otpauth:") raise("Invalid OTP URL protocol")
   const name = decodeURIComponent(x.pathname.slice(1))
@@ -129,4 +126,4 @@ export const parseOTPURL = async (url: string | URL) => {
   }
 }
 
-export const generateOTPDataURL = (...args: Parameters<typeof generateOTPURL>) => generateOTPURL(...args).then(url => toDataURL(url))
+export const generateOTPDataURL = (key: OTPKey, opts?: OTPURIOpts) => toDataURL(generateOTPURL(key, opts))
