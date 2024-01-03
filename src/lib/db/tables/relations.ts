@@ -1,6 +1,7 @@
 import { relations, TableRelationsHelpers } from "drizzle-orm"
 import { users, UserMetaColumns } from "@/lib/db/tables/users"
 import { sessions } from "@/lib/db/tables/sessions"
+import { emailVerifications } from "@/lib/db/tables/email-verifications"
 import { uploads } from "@/lib/db/tables/uploads"
 import { tagAliases, tagImplications, tagTypes, tags } from "@/lib/db/tables/tags"
 import { postCommentVotes, postComments, postFavourites, postParents, postVotes, postTags, posts } from "@/lib/db/tables/posts"
@@ -51,6 +52,8 @@ const userMetaRelations = <T extends TableWithColumns<UserMetaColumns>>(table: T
 })
 
 export const sessionUserRelations = relations(sessions, userMetaRelations(sessions))
+
+export const emailVerificationUserRelations = relations(emailVerifications, userMetaRelations(emailVerifications))
 
 export const uploadRelations = relations(uploads, ({ one, many }) => ({
   posts: many(posts),

@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { z } from "zod"
 import { nullToUndef } from "@/lib/utils"
 
-export const UpdateEmailCard = ({ email }: { email: string }) => {
+export const UpdateEmailCard = ({ email, emailVerifiedAt }: { email: string, emailVerifiedAt: Date | null }) => {
   const router = useRouter()
   const utils = trpc.useUtils()
   const schema = updateUserSchema.pick({ email: true }).required()
@@ -20,7 +20,7 @@ export const UpdateEmailCard = ({ email }: { email: string }) => {
     defaultValues: { email },
   })
 
-  const { mutate, isLoading } = trpc.account.update.useMutation({
+  const { mutateAsync: updateAcount, isLoading: isUpdatingAccount } = trpc.account.update.useMutation({
     onSuccess: user => {
       toast.success(`Updated email to ${user.email}`)
       utils.users.query.invalidate()
@@ -28,23 +28,34 @@ export const UpdateEmailCard = ({ email }: { email: string }) => {
     },
     onError: e => toast.error(e.message),
   })
+  const { mutateAsync: initiateEmailVerification, isLoading: isInitiatingEmailVerification } =
+    trpc.auth.initiateEmailVerification.useMutation({
+      onSuccess: emailVerification => toast.success(`Sent verification email to ${emailVerification.email}`),
+      onError: e => toast.error(e.message),
+    })
 
   return (
     <AccountCard header="Your Email" description="Please enter the email address you want to use with your account.">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(x => mutate(x))}>
+        <form onSubmit={form.handleSubmit(x => updateAcount(x))}>
           <AccountCardBody>
             <FormField control={form.control} name="email" render={({ field: { value, ...props } }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...props} type="email" value={nullToUndef(value)} />
+                  <Input {...props} type="email" value={nullToUndef(value)} placeholder="Your email" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}/>
           </AccountCardBody>
           <AccountCardFooter description="512 characters maximum">
-            <Button disabled={isLoading}>Update Email</Button>
+            <div>
+              {emailVerifiedAt === null ? <Button type="button"
+                onClick={form.handleSubmit(x => updateAcount(x).then(() => initiateEmailVerification()))}
+                disabled={isUpdatingAccount || isInitiatingEmailVerification}>Verify Email</Button> :
+                <span className="text-sm text-green-500 px-2">Email Verified</span>}
+              <Button className="ml-4" disabled={isUpdatingAccount}>Update Email</Button>
+            </div>
           </AccountCardFooter>
         </form>
       </Form>

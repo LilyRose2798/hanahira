@@ -4,6 +4,8 @@ import { PgColumn } from "drizzle-orm/pg-core"
 export const sqlDefault = sql`DEFAULT`
 export type SQLDefaults<T> = { [_ in { [K in keyof T]-?: undefined extends T[K] ? K : never }[keyof T]]: SQL }
 
+export const sqlNowPlusSeconds = (seconds: number) => sql.raw(`NOW() + INTERVAL '${seconds} SECONDS'`)
+
 export const paginationConfig = ({ page = 1, pageSize = 50 }: { page?: number, pageSize?: number }) => ({
   offset: (page - 1) * pageSize,
   limit: pageSize,

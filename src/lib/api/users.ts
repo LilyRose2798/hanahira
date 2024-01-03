@@ -1,9 +1,10 @@
 import { db } from "@/lib/db"
 import { whereConfig, paginationConfig, sortingConfig, fieldsConfig } from "@/lib/db/utils"
 import { KnownKeysOnly, eq } from "drizzle-orm"
-import { userDefaults, UserIdParams, UsernameParams, CreateUserParams, UpdateUserParams, QueryUserParams, QueryUsernameParams, QueryUserIdParams, ReplaceUserParams } from "@/lib/db/schemas/users"
+import { userDefaults, UserIdParams, Password, UsernameParams, CreateUserParams, UpdateUserParams, QueryUserParams, QueryUsernameParams, QueryUserIdParams, ReplaceUserParams } from "@/lib/db/schemas/users"
 import { users } from "@/lib/db/tables/users"
 import { parseFound, parseCreated, parseFoundFirst, limit } from "@/lib/api/utils"
+import { hash } from "argon2"
 
 type FindUsersParams = NonNullable<Parameters<typeof db.query.users.findMany>[0]>
 type FindUserParams = Omit<FindUsersParams, "limit">
@@ -43,7 +44,14 @@ export const replaceUser = ({ id, ...user }: ReplaceUserParams) => db.update(use
   .set({ ...userDefaults, ...user, updatedAt: new Date() }).where(eq(users.id, id)).returning().execute().then(parseFoundFirst)
 
 export const updateUser = ({ id, ...user }: UpdateUserParams) => db.update(users)
-  .set({ ...user, updatedAt: new Date }).where(eq(users.id, id)).returning().execute().then(parseFoundFirst)
+  .set({ ...user, ...(user.email !== undefined ? { emailVerifiedAt: user.emailVerifiedAt ?? null } : {}), updatedAt: new Date })
+  .where(eq(users.id, id)).returning().execute().then(parseFoundFirst)
+
+export const updateUserPassword = async ({ id, password }: UserIdParams & { password: Password }) => {
+  const passwordHash = await hash(password)
+  await updateUser({ id, passwordHash })
+  return
+}
 
 export const deleteUser = ({ id }: UserIdParams) => db.delete(users)
   .where(eq(users.id, id)).returning().execute().then(parseFoundFirst)

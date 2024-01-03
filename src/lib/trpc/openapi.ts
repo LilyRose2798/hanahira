@@ -19,7 +19,7 @@ export const getOpenApiDocument = cache(async (): Promise<OpenAPIObject> => gene
     "Cookie Authorization": {
       type: "apiKey",
       in: "cookie",
-      name: "auth_session",
+      name: "session",
     },
   },
   paths: openApiUploadPath,

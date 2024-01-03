@@ -1,7 +1,7 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, hasAuthWithUser } from "@/lib/trpc/middleware"
-import { replaceUserSchema, updateUserSchema, userSchema } from "@/lib/db/schemas/users"
-import { replaceUser, updateUser, deleteUser, queryUserById } from "@/lib/api/users"
+import { replaceUserSchema, updateUserSchema, userSchema, passwordSchema } from "@/lib/db/schemas/users"
+import { replaceUser, updateUser, deleteUser, queryUserById, updateUserPassword } from "@/lib/api/users"
 import { z } from "zod"
 import { partialUploadSchema, uploadIdSchema } from "@/lib/db/schemas/uploads"
 import { baseQuerySchema } from "@/lib/db/schemas/utils"
@@ -39,7 +39,7 @@ export const accountRouter = r({
       .use(hasAuth)
       .input(z.void())
       .output(userSchema)
-      .query(async ({ ctx: { session: { id } } }) => queryUserById({ id })),
+      .query(async ({ ctx: { session: { createdBy: id } } }) => queryUserById({ id })),
     uploads: p
       .meta({ openapi: {
         method: "GET",
@@ -121,6 +121,13 @@ export const accountRouter = r({
     .output(userSchema)
     .mutation(async ({ input, ctx: { session: { createdBy: id } } }) => (
       updateUser({ id, ...input }))),
+  updatePassword: p
+    .use(hasAuth)
+    .input(z.object({
+      password: passwordSchema,
+    }))
+    .output(z.void())
+    .mutation(async ({ ctx: { session: { createdBy: id } }, input }) => updateUserPassword({ id, ...input })),
   delete: p
     .meta({ openapi: {
       method: "DELETE",

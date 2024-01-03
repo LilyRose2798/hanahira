@@ -1,13 +1,14 @@
-import { procedure as p } from "@/lib/trpc"
-import { hasAuth } from "@/lib/trpc/middleware"
+import { router as r, procedure as p } from "@/lib/trpc"
+import { hasAuth, hasAuthWithUser } from "@/lib/trpc/middleware"
 import { signInSchema, signUpSchema } from "@/lib/db/schemas/users"
 import { sessionSchema } from "@/lib/db/schemas/sessions"
-import { signIn, signUp, signOut } from "@/lib/api/auth"
+import { emailVerificationIdSchema, emailVerificationSchema } from "@/lib/db/schemas/email-verifications"
+import { signIn, signUp, signOut, initiateEmailVerification, submitEmailVerification } from "@/lib/api/auth"
 import { z } from "zod"
 
 export const tags = ["Auth"]
 
-export const authProcedures = {
+export const authRouter = r({
   signIn: p
     .meta({ openapi: {
       method: "POST",
@@ -59,4 +60,13 @@ export const authProcedures = {
     .input(z.void())
     .output(sessionSchema)
     .mutation(async ({ ctx: { session } }) => signOut(session)),
-}
+  initiateEmailVerification: p
+    .use(hasAuthWithUser)
+    .input(z.void())
+    .output(emailVerificationSchema)
+    .mutation(async ({ ctx: { session: { creator } } }) => initiateEmailVerification(creator)),
+  submitEmailVerification: p
+    .input(emailVerificationIdSchema)
+    .output(z.void())
+    .mutation(async ({ input }) => submitEmailVerification(input)),
+})

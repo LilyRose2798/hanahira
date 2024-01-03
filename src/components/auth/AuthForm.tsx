@@ -29,8 +29,8 @@ export const AuthForm = ({ isSignUp = false }: {
     router.refresh()
   }
 
-  const { mutate: signIn, isLoading: isSigningIn } = trpc.signIn.useMutation({ onSuccess })
-  const { mutate: signUp, isLoading: isSigningUp } = trpc.signUp.useMutation({ onSuccess })
+  const { mutate: signIn, isLoading: isSigningIn } = trpc.auth.signIn.useMutation({ onSuccess })
+  const { mutate: signUp, isLoading: isSigningUp } = trpc.auth.signUp.useMutation({ onSuccess })
 
   return (
     <Form {...form}>

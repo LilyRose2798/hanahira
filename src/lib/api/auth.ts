@@ -1,68 +1,18 @@
-import { CreateSessionParams, QuerySessionIdParams, QuerySessionsParams, ReplaceSessionParams, Session, SessionsCreatedByParams, SessionIdParams, SessionsUpdatedByParams, UpdateSessionParams, sessionDefaults } from "@/lib/db/schemas/sessions"
-import { QueryCreatedByIdParams, QueryCreatedByUsernameParams, SignInParams, SignUpParams, UsernameParams } from "@/lib/db/schemas/users"
-import { createUser, findUserByUsername } from "@/lib/api/users"
+import { Session } from "@/lib/db/schemas/sessions"
+import { SignInParams, SignUpParams, User } from "@/lib/db/schemas/users"
+import { createUser, findUserByUsername, updateUser } from "@/lib/api/users"
 import { headers, cookies } from "next/headers"
 import { TRPCError } from "@trpc/server"
 import * as p from "postgres"
 import { db } from "@/lib/db"
-import { whereConfig, paginationConfig, sortingConfig, fieldsConfig } from "@/lib/db/utils"
 import { env } from "@/lib/env.mjs"
-import { parseFound, parseFoundFirst, limit, parseCreated } from "@/lib/api/utils"
-import { sessions, sessionExpiresInSeconds, sessionExpiresInMillis } from "@/lib/db/tables/sessions"
+import { sessionExpiresInSeconds, sessionExpiresInMillis } from "@/lib/db/tables/sessions"
 import { hash, verify } from "argon2"
-import { KnownKeysOnly, eq } from "drizzle-orm"
-
-type FindSessionsParams = NonNullable<Parameters<typeof db.query.sessions.findMany>[0]>
-type FindSessionParams = Omit<FindSessionsParams, "limit">
-
-export const findSessions = <T extends FindSessionsParams>(config: KnownKeysOnly<T, FindSessionsParams>) => db.query.sessions
-  .findMany({ limit, ...config }).execute().then(parseFound)
-
-export const findSessionById = <T extends SessionIdParams & FindSessionParams>(
-  { id, ...config }: KnownKeysOnly<T, SessionIdParams & FindSessionParams>) => db.query.sessions
-    .findFirst({ where: (sessions, { eq }) => eq(sessions.id, id), ...config }).execute().then(parseFound)
-
-export const findSessionsCreatedBy = <T extends SessionsCreatedByParams & FindSessionsParams>(
-  { createdBy, limit, ...config }: KnownKeysOnly<T, SessionsCreatedByParams & FindSessionsParams>) => db.query.sessions
-    .findMany({ where: (sessions, { eq }) => eq(sessions.createdBy, createdBy), ...config }).execute().then(parseFound)
-
-export const findSessionsCreatedByUsername = <T extends UsernameParams & FindSessionsParams>(
-  { username, limit, ...config }: KnownKeysOnly<T, UsernameParams & FindSessionsParams>) => (
-    findUserByUsername({ username, columns: { id: true } }).then(({ id: createdBy }) => findSessionsCreatedBy({ createdBy, ...config })))
-
-export const querySessions = ({ fields, page, sort, ...session }: QuerySessionsParams) => db.query.sessions.findMany({
-  ...whereConfig(session),
-  ...fieldsConfig(sessions, fields),
-  ...paginationConfig({ page }),
-  ...sortingConfig(sort),
-}).execute().then(parseFound)
-
-export const querySessionById = ({ id, fields }: QuerySessionIdParams) => db.query.sessions.findFirst({
-  where: (sessions, { eq }) => eq(sessions.id, id),
-  ...fieldsConfig(sessions, fields),
-}).execute().then(parseFound)
-
-export const querySessionsCreatedById = ({ id, fields, page, sort }: QueryCreatedByIdParams) => db.query.sessions.findMany({
-  where: (sessions, { eq }) => eq(sessions.createdBy, id),
-  ...fieldsConfig(sessions, fields),
-  ...paginationConfig({ page }),
-  ...sortingConfig(sort),
-}).execute().then(parseFound)
-
-export const querySessionsCreatedByUsername = ({ username, ...config }: QueryCreatedByUsernameParams) => (
-  findUserByUsername({ username, columns: { id: true } }).then(({ id }) => querySessionsCreatedById({ id, ...config })))
-
-export const createSession = (session: CreateSessionParams & SessionsCreatedByParams) => db.insert(sessions)
-  .values({ ...session, updatedBy: session.createdBy }).returning().execute().then(parseCreated)
-
-export const replaceSession = ({ id, ...session }: ReplaceSessionParams & SessionsUpdatedByParams) => db.update(sessions)
-  .set({ ...sessionDefaults, ...session, updatedAt: new Date() }).where(eq(sessions.id, id)).returning().execute().then(parseFoundFirst)
-
-export const updateSession = ({ id, ...session }: UpdateSessionParams & SessionsUpdatedByParams) => db.update(sessions)
-  .set({ ...session, updatedAt: new Date() }).where(eq(sessions.id, id)).returning().execute().then(parseFoundFirst)
-
-export const deleteSession = ({ id }: SessionIdParams) => db.delete(sessions)
-  .where(eq(sessions.id, id)).returning().execute().then(parseFoundFirst)
+import { KnownKeysOnly } from "drizzle-orm"
+import { FindSessionParams, createSession, deleteSession, findSessionById, replaceSession } from "@/lib/api/sessions"
+import { createEmailVerification, deleteEmailVerification, deleteEmailVerificationsCreatedById, findEmailVerificationById } from "@/lib/api/email-verifications"
+import { EmailVerificationIdParams } from "@/lib/db/schemas/email-verifications"
+import { sendMail } from "@/lib/mail"
 
 export const cookieName = "session"
 
@@ -133,4 +83,33 @@ export const signOut = async (session: Session) => {
   await deleteSession({ id: session.id })
   setSessionCookie(null)
   return session
+}
+
+export const initiateEmailVerification = async ({ id: createdBy, username, email }: User) => {
+  if (email === null) throw new TRPCError({ code: "BAD_REQUEST", message: "User does not have an email address set" })
+  await deleteEmailVerificationsCreatedById({ createdBy })
+  const emailVerification = await createEmailVerification({ createdBy, email })
+  const verificationUrl = new URL(`/verify/${emailVerification.id}`, env.BASE_URL)
+  await sendMail({
+    to: email,
+    subject: "Hanahira Email Verification",
+    html: `Click the link below to confirm the email address for the user <i>${username}</i> at Hanahira:<br><br>${verificationUrl}`,
+  })
+  return emailVerification
+}
+
+export const submitEmailVerification = async ({ id }: EmailVerificationIdParams) => {
+  const emailVerification = await findEmailVerificationById({ id, with: { creator: true } })
+  const now = Date.now()
+  const expiresAt = emailVerification.expiresAt.getTime()
+  if (now >= expiresAt) {
+    await deleteEmailVerification({ id })
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Email verification has expired" })
+  }
+  if (emailVerification.creator.email !== emailVerification.email) {
+    await deleteEmailVerification({ id })
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Email verification is for a different email than is currently set" })
+  }
+  await updateUser({ id: emailVerification.createdBy, emailVerifiedAt: new Date(now) })
+  await deleteEmailVerification({ id })
 }
