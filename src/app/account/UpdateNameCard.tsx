@@ -47,10 +47,10 @@ export const UpdateNameCard = ({ name }: { name: string }) => {
           <AccountCardFooter description={maxNameLength !== null ? `${maxNameLength} characters maximum` : ""}>
             <div>
               <Button disabled={isLoading}>Update Name</Button>
-              <Button className="ml-4" type="button" onClick={() => {
+              {name && <Button className="ml-4" type="button" onClick={() => {
                 form.setValue("name", "")
                 mutate({ name: null })
-              }} variant="destructive" disabled={isLoading}>Remove Name</Button>
+              }} variant="destructive" disabled={isLoading}>Remove Name</Button>}
             </div>
           </AccountCardFooter>
         </form>

@@ -56,10 +56,10 @@ export const UpdateEmailCard = ({ email, emailVerifiedAt }: { email: string, ema
                 disabled={isUpdatingAccount || isInitiatingEmailVerification}>Verify Email</Button> :
                 <span className="text-sm text-green-500 px-2">Email Verified</span>}
               <Button className="ml-4" disabled={isUpdatingAccount}>Update Email</Button>
-              <Button className="ml-4" type="button" onClick={() => {
+              {email && <Button className="ml-4" type="button" onClick={() => {
                 form.setValue("email", "")
                 updateAcount({ email: null })
-              }} variant="destructive" disabled={isUpdatingAccount}>Remove Email</Button>
+              }} variant="destructive" disabled={isUpdatingAccount}>Remove Email</Button>}
             </div>
           </AccountCardFooter>
         </form>
