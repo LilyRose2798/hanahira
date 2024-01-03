@@ -14,8 +14,10 @@ export const users = pgTable("user", {
   username: text("username").notNull().unique(),
   name: text("name"),
   email: text("email"),
+  emailVerifiedAt: timestamp("email_verified_at", { mode: "date", withTimezone: true }),
   role: userRoleEnum("role").notNull().default(defaultUserRole),
   passwordHash: text("password_hash").notNull(),
+  otpSecret: text("otp_secret"),
   ...timestampMetaColumns,
 })
 export type UsersTable = typeof users

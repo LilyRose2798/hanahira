@@ -24,8 +24,10 @@ export const {
   username: z.string().min(1).max(64).regex(/[a-z0-9_-]+/, "username may only contain lowercase letters, numbers, underscores (_), and dashes (-)")
     .openapi({ description: "The user's unique username", example: "oshino_shinobu" }),
   email: z.string().email().max(512).openapi({ description: "The user's email address", example: "shinobu@example.com" }).nullable(),
+  emailVerifiedAt: z.date().nullable().openapi({ description: "The date the user verified their email address", example: new Date(0) }),
   role: z.enum(userRoles).openapi({ description: "The user's role", example: defaultUserRole }),
   passwordHash: z.string().openapi({ description: "The user's password hash", example: "asdf" }),
+  otpSecret: z.string().nullable().openapi({ description: "The user's OTP secret", example: "RSAG65YKKUPGRZS3P2O22KSTDV5NOO5K" }),
 }, { role: true }, { id: true, name: true, username: true, role: true, createdAt: true })
 
 export const usernameSchema = userSchema.pick({ username: true })
