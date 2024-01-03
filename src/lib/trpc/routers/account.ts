@@ -126,7 +126,7 @@ export const accountRouter = r({
     .input(z.object({
       password: passwordSchema,
     }))
-    .output(z.void())
+    .output(userSchema)
     .mutation(async ({ ctx: { session: { createdBy: id } }, input }) => updateUserPassword({ id, ...input })),
   delete: p
     .meta({ openapi: {

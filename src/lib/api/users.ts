@@ -47,11 +47,8 @@ export const updateUser = ({ id, ...user }: UpdateUserParams) => db.update(users
   .set({ ...user, ...(user.email !== undefined ? { emailVerifiedAt: user.emailVerifiedAt ?? null } : {}), updatedAt: new Date })
   .where(eq(users.id, id)).returning().execute().then(parseFoundFirst)
 
-export const updateUserPassword = async ({ id, password }: UserIdParams & { password: Password }) => {
-  const passwordHash = await hash(password)
-  await updateUser({ id, passwordHash })
-  return
-}
+export const updateUserPassword = async ({ id, password }: UserIdParams & { password: Password }) => (
+  updateUser({ id, passwordHash: await hash(password) }))
 
 export const deleteUser = ({ id }: UserIdParams) => db.delete(users)
   .where(eq(users.id, id)).returning().execute().then(parseFoundFirst)

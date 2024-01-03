@@ -27,7 +27,7 @@ export const UpdatePasswordCard = () => {
   })
 
   const { mutate, isLoading } = trpc.account.updatePassword.useMutation({
-    onSuccess: () => {
+    onSuccess: _ => {
       utils.users.query.invalidate()
       router.refresh()
       toast.success("Updated password")
