@@ -15,6 +15,7 @@ export const UpdateEmailCard = ({ email, emailVerifiedAt }: { email: string, ema
   const router = useRouter()
   const utils = trpc.useUtils()
   const schema = updateUserSchema.pick({ email: true }).required()
+  const maxEmailLength = schema.shape.email.unwrap().maxLength
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: { email },
@@ -22,7 +23,7 @@ export const UpdateEmailCard = ({ email, emailVerifiedAt }: { email: string, ema
 
   const { mutateAsync: updateAcount, isLoading: isUpdatingAccount } = trpc.account.update.useMutation({
     onSuccess: user => {
-      toast.success(`Updated email to ${user.email}`)
+      toast.success(user.email !== null ? `Updated email to ${user.email}` : "Removed email")
       utils.users.query.invalidate()
       router.refresh()
     },
@@ -48,13 +49,17 @@ export const UpdateEmailCard = ({ email, emailVerifiedAt }: { email: string, ema
               </FormItem>
             )}/>
           </AccountCardBody>
-          <AccountCardFooter description="512 characters maximum">
+          <AccountCardFooter description={maxEmailLength !== null ? `${maxEmailLength} characters maximum` : ""}>
             <div>
               {emailVerifiedAt === null ? <Button type="button"
                 onClick={form.handleSubmit(x => updateAcount(x).then(() => initiateEmailVerification()))}
                 disabled={isUpdatingAccount || isInitiatingEmailVerification}>Verify Email</Button> :
                 <span className="text-sm text-green-500 px-2">Email Verified</span>}
               <Button className="ml-4" disabled={isUpdatingAccount}>Update Email</Button>
+              <Button className="ml-4" type="button" onClick={() => {
+                form.setValue("email", "")
+                updateAcount({ email: null })
+              }} variant="destructive" disabled={isUpdatingAccount}>Remove Email</Button>
             </div>
           </AccountCardFooter>
         </form>

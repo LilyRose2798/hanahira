@@ -11,47 +11,40 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { z } from "zod"
 import { nullToUndef } from "@/lib/utils"
 
-export const UpdateNameCard = ({ name }: { name: string }) => {
+export const Update2FACard = () => {
   const router = useRouter()
   const utils = trpc.useUtils()
-  const schema = updateUserSchema.pick({ name: true }).required()
-  const maxNameLength = schema.shape.name.unwrap().maxLength
+  const schema = updateUserSchema.pick({ otpSecret: true }).required()
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: { name },
+    defaultValues: { otpSecret: "" },
   })
 
   const { mutate, isLoading } = trpc.account.update.useMutation({
-    onSuccess: user => {
+    onSuccess: () => {
       utils.users.query.invalidate()
       router.refresh()
-      toast.success(user.name !== null ? `Updated name to ${user.name}` : "Removed name")
+      toast.success("Successfully enabled 2FA on your account")
     },
     onError: e => toast.error(e.message),
   })
 
   return (
-    <AccountCard header="Your Name" description="Please enter your full name, or a display name you are comfortable with.">
+    <AccountCard header="Two-Factor Authentication" description="">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(x => mutate(x))}>
           <AccountCardBody>
-            <FormField control={form.control} name="name" render={({ field: { value, ...props } }) => (
+            <FormField control={form.control} name="otpSecret" render={({ field: { value, ...props } }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...props} value={nullToUndef(value)} placeholder="Your name" />
+                  <Input {...props} value={nullToUndef(value)} placeholder="Your 2FA Secret" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}/>
           </AccountCardBody>
-          <AccountCardFooter description={maxNameLength !== null ? `${maxNameLength} characters maximum` : ""}>
-            <div>
-              <Button disabled={isLoading}>Update Name</Button>
-              <Button className="ml-4" type="button" onClick={() => {
-                form.setValue("name", "")
-                mutate({ name: null })
-              }} variant="destructive" disabled={isLoading}>Remove Name</Button>
-            </div>
+          <AccountCardFooter description="64 characters maximum">
+            <Button disabled={isLoading}>Update 2FA Secret</Button>
           </AccountCardFooter>
         </form>
       </Form>
@@ -59,4 +52,4 @@ export const UpdateNameCard = ({ name }: { name: string }) => {
   )
 }
 
-export default UpdateNameCard
+export default Update2FACard

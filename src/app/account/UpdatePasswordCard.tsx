@@ -18,6 +18,7 @@ export const UpdatePasswordCard = () => {
     password: passwordSchema,
     confirmPassword: passwordSchema,
   }).required()
+  const maxPasswordLength = passwordSchema.maxLength
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -28,6 +29,8 @@ export const UpdatePasswordCard = () => {
 
   const { mutate, isLoading } = trpc.account.updatePassword.useMutation({
     onSuccess: _ => {
+      form.setValue("password", "")
+      form.setValue("confirmPassword", "")
       utils.users.query.invalidate()
       router.refresh()
       toast.success("Updated password")
@@ -45,7 +48,7 @@ export const UpdatePasswordCard = () => {
             <FormField control={form.control} name="password" render={({ field: { value, ...props } }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...props} value={nullToUndef(value)} placeholder="Password" />
+                  <Input {...props} value={nullToUndef(value)} placeholder="Password" type="password" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -55,13 +58,13 @@ export const UpdatePasswordCard = () => {
             <FormField control={form.control} name="confirmPassword" render={({ field: { value, ...props } }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...props} value={nullToUndef(value)} placeholder="Confirm password" />
+                  <Input {...props} value={nullToUndef(value)} placeholder="Confirm password" type="password" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}/>
           </AccountCardBody>
-          <AccountCardFooter description="64 characters maximum">
+          <AccountCardFooter description={maxPasswordLength !== null ? `${maxPasswordLength} characters maximum` : ""}>
             <Button disabled={isLoading}>Update Password</Button>
           </AccountCardFooter>
         </form>

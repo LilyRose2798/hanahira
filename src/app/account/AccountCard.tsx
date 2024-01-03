@@ -23,7 +23,7 @@ export const AccountCardFooter = ({ description, children }: {
   children: ReactNode
   description: string
 }) => (
-  <div className="bg-primary-foreground p-4 border flex justify-between items-center" id="footer">
+  <div className="bg-primary-foreground p-4 border-t rounded-b-lg flex justify-between items-center" id="footer">
     <p className="text-muted-foreground text-sm">{description}</p>
     {children}
   </div>
