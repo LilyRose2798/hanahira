@@ -29,8 +29,6 @@ export const UpdatePasswordCard = () => {
 
   const { mutate, isLoading } = trpc.account.updatePassword.useMutation({
     onSuccess: _ => {
-      form.setValue("password", "")
-      form.setValue("confirmPassword", "")
       utils.users.query.invalidate()
       router.refresh()
       toast.success("Updated password")
@@ -38,10 +36,12 @@ export const UpdatePasswordCard = () => {
   })
 
   return (
-    <AccountCard header="Your Password" description="Please enter the password you want to use to sign in to your account.">
+    <AccountCard header="Password" description="Please enter the password you want to use to sign in to your account.">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(x => {
           if (x.password !== x.confirmPassword) return form.setError("confirmPassword", { message: "Passwords do not match" })
+          form.setValue("password", "")
+          form.setValue("confirmPassword", "")
           mutate(x)
         })}>
           <AccountCardBody>

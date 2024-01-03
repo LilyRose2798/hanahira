@@ -13,6 +13,7 @@ import { FindSessionParams, createSession, deleteSession, findSessionById, repla
 import { createEmailVerification, deleteEmailVerification, deleteEmailVerificationsCreatedById, findEmailVerificationById } from "@/lib/api/email-verifications"
 import { EmailVerificationIdParams } from "@/lib/db/schemas/email-verifications"
 import { sendMail } from "@/lib/mail"
+import { verifyTOTP } from "@/lib/api/otp"
 
 export const cookieName = "session"
 
@@ -57,10 +58,11 @@ export const validateAuth = async <T extends { verifyOrigin: boolean } & WithSes
   return session
 }
 
-export const signIn = async ({ username, password }: SignInParams) => {
+export const signIn = async ({ username, password, totp }: SignInParams) => {
   const user = await findUserByUsername({ username })
   const validPassword = await verify(user.passwordHash, password)
   if (!validPassword) throw new TRPCError({ code: "BAD_REQUEST", message: "Incorrect username or password" })
+  if (user.otpSecret && (!totp || !(await verifyTOTP(totp, user.otpSecret)))) throw new TRPCError({ code: "BAD_REQUEST", message: "Incorrect TOTP code" })
   const session = await createSession({ createdBy: user.id })
   setSessionCookie(session.id)
   return session

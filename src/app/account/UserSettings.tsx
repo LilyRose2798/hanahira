@@ -9,7 +9,7 @@ export const UserSettings = ({ user }: { user: User | null }) => (<>
   <UpdateNameCard name={user?.name ?? ""} />
   <UpdateEmailCard email={user?.email ?? ""} emailVerifiedAt={user?.emailVerifiedAt ?? null} />
   <UpdatePasswordCard />
-  <Update2FACard />
+  <Update2FACard otpSecret={user?.otpSecret} />
 </>)
 
 export default UserSettings

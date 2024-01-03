@@ -31,7 +31,7 @@ export const UpdateNameCard = ({ name }: { name: string }) => {
   })
 
   return (
-    <AccountCard header="Your Name" description="Please enter your full name, or a display name you are comfortable with.">
+    <AccountCard header="Display Name" description="Please enter your full name, or a display name you are comfortable with.">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(x => mutate(x))}>
           <AccountCardBody>

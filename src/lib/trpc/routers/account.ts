@@ -1,7 +1,7 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, hasAuthWithUser } from "@/lib/trpc/middleware"
 import { replaceUserSchema, updateUserSchema, userSchema, passwordSchema } from "@/lib/db/schemas/users"
-import { replaceUser, updateUser, deleteUser, queryUserById, updateUserPassword } from "@/lib/api/users"
+import { replaceUser, updateUser, deleteUser, queryUserById, updateUserPassword, enableUser2FA, disableUser2FA } from "@/lib/api/users"
 import { z } from "zod"
 import { partialUploadSchema, uploadIdSchema } from "@/lib/db/schemas/uploads"
 import { baseQuerySchema } from "@/lib/db/schemas/utils"
@@ -128,6 +128,21 @@ export const accountRouter = r({
     }))
     .output(userSchema)
     .mutation(async ({ ctx: { session: { createdBy: id } }, input }) => updateUserPassword({ id, ...input })),
+  enable2FA: p
+    .use(hasAuth)
+    .input(z.object({
+      otpSecret: userSchema.shape.otpSecret.unwrap(),
+      totp: z.string(),
+    }))
+    .output(userSchema)
+    .mutation(async ({ ctx: { session: { createdBy: id } }, input }) => enableUser2FA({ id, ...input })),
+  disable2FA: p
+    .use(hasAuthWithUser)
+    .input(z.object({
+      totp: z.string(),
+    }))
+    .output(userSchema)
+    .mutation(async ({ ctx: { session: { creator: { id, otpSecret } } }, input }) => disableUser2FA({ id, otpSecret, ...input })),
   delete: p
     .meta({ openapi: {
       method: "DELETE",

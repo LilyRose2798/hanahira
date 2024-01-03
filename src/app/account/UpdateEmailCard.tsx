@@ -36,7 +36,7 @@ export const UpdateEmailCard = ({ email, emailVerifiedAt }: { email: string, ema
     })
 
   return (
-    <AccountCard header="Your Email" description="Please enter the email address you want to use with your account.">
+    <AccountCard header="Email Address" description="Please enter the email address you want to use with your account.">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(x => updateAcount(x))}>
           <AccountCardBody>

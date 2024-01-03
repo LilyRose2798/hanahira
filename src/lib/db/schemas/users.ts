@@ -32,9 +32,11 @@ export const {
 
 export const usernameSchema = userSchema.pick({ username: true })
 export const queryUsernameSchema = usernameSchema.extend(fieldsSchema.shape)
+export const totpSchema = z.string().min(6).max(6)
+  .openapi({ description: "The TOTP code", example: "294817" }).optional()
 export const passwordSchema = z.string().min(1).max(256)
   .openapi({ description: "The user's password", example: "hunter2" })
-export const signInSchema = z.object({ username: userSchema.shape.username, password: passwordSchema })
+export const signInSchema = z.object({ username: userSchema.shape.username, password: passwordSchema, totp: totpSchema })
   .openapi({ title: "Credentials", description: "The data to sign in to a user account with" })
 export const signUpSchema = z.object({ username: userSchema.shape.username, password: passwordSchema })
   .openapi({ title: "Credentials", description: "The data to sign up for a new user account" })

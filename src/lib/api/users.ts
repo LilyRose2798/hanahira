@@ -5,6 +5,8 @@ import { userDefaults, UserIdParams, Password, UsernameParams, CreateUserParams,
 import { users } from "@/lib/db/tables/users"
 import { parseFound, parseCreated, parseFoundFirst, limit } from "@/lib/api/utils"
 import { hash } from "argon2"
+import { verifyTOTP } from "./otp"
+import { TRPCError } from "@trpc/server"
 
 type FindUsersParams = NonNullable<Parameters<typeof db.query.users.findMany>[0]>
 type FindUserParams = Omit<FindUsersParams, "limit">
@@ -49,6 +51,17 @@ export const updateUser = ({ id, ...user }: UpdateUserParams) => db.update(users
 
 export const updateUserPassword = async ({ id, password }: UserIdParams & { password: Password }) => (
   updateUser({ id, passwordHash: await hash(password) }))
+
+export const enableUser2FA = async ({ id, otpSecret, totp }: UserIdParams & { otpSecret: string, totp: string }) => {
+  if (!(await verifyTOTP(totp, otpSecret, { window: 3 }))) throw new TRPCError({ code: "BAD_REQUEST", message: "Incorrect TOTP code" })
+  return await updateUser({ id, otpSecret })
+}
+
+export const disableUser2FA = async ({ id, otpSecret, totp }: UserIdParams & { otpSecret: string | null, totp: string }) => {
+  if (otpSecret === null) throw new TRPCError({ code: "BAD_REQUEST", message: "OTP secret not provided" })
+  if (!(await verifyTOTP(totp, otpSecret, { window: 3 }))) throw new TRPCError({ code: "BAD_REQUEST", message: "Incorrect TOTP code" })
+  return await updateUser({ id, otpSecret: null })
+}
 
 export const deleteUser = ({ id }: UserIdParams) => db.delete(users)
   .where(eq(users.id, id)).returning().execute().then(parseFoundFirst)

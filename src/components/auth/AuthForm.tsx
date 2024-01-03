@@ -34,12 +34,12 @@ export const AuthForm = ({ isSignUp = false }: {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(x => (isSignUp ? signUp(x) : signIn(x)))} className={"space-y-8"}>
+      <form onSubmit={form.handleSubmit(x => (isSignUp ? signUp(x) : signIn({ ...x, totp: x.totp ?? undefined })))} className={"space-y-8"}>
         <FormField control={form.control} name="username" render={({ field }) => (
           <FormItem>
             <FormLabel>Username</FormLabel>
             <FormControl>
-              <Input {...field} value={field.value ?? undefined} />
+              <Input {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -48,11 +48,20 @@ export const AuthForm = ({ isSignUp = false }: {
           <FormItem>
             <FormLabel>Password</FormLabel>
             <FormControl>
-              <Input {...field} type="password" value={field.value ?? undefined} />
+              <Input {...field} type="password" />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}/>
+        {!isSignUp && <FormField control={form.control} name="totp" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Two-Factor Verification Code (if enabled)</FormLabel>
+            <FormControl>
+              <Input {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}/>}
         <Button type="submit" className="w-full" disabled={isSigningIn || isSigningUp}>
           Sign{isSigningIn || isSigningUp ? "ing" : ""} {isSignUp ? "up" : "in"}
         </Button>
