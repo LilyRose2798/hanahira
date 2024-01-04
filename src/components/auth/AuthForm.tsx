@@ -55,7 +55,7 @@ export const AuthForm = ({ isSignUp = false }: {
           </FormItem>
         )}/>
         {!isSignUp && <>
-          <Link href="/forgot-password" className="text-sm text-sky-500">Forgot Password?</Link>
+          <Link href="/password-reset" className="text-sm text-sky-500">Forgot Password?</Link>
           <FormField control={form.control} name="totp" render={({ field }) => (
             <FormItem>
               <FormLabel>Two-Factor Verification Code (if enabled)</FormLabel>
