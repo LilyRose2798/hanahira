@@ -1,10 +1,12 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, hasAuthWithUser } from "@/lib/trpc/middleware"
-import { signInSchema, signUpSchema } from "@/lib/db/schemas/users"
+import { passwordSchema, signInSchema, signUpSchema, usernameSchema } from "@/lib/db/schemas/users"
 import { sessionSchema } from "@/lib/db/schemas/sessions"
 import { emailVerificationIdSchema, emailVerificationSchema } from "@/lib/db/schemas/email-verifications"
-import { signIn, signUp, signOut, initiateEmailVerification, submitEmailVerification } from "@/lib/api/auth"
+import { passwordResetIdSchema, passwordResetSchema } from "@/lib/db/schemas/password-resets"
+import { signIn, signUp, signOut, initiateEmailVerification, submitEmailVerification, initiatePasswordReset, submitPasswordReset } from "@/lib/api/auth"
 import { z } from "zod"
+import { findPasswordResetById } from "@/lib/api/password-resets"
 
 export const tags = ["Auth"]
 
@@ -69,4 +71,16 @@ export const authRouter = r({
     .input(emailVerificationIdSchema)
     .output(z.void())
     .mutation(async ({ input }) => submitEmailVerification(input)),
+  initiatePasswordReset: p
+    .input(usernameSchema)
+    .output(passwordResetSchema)
+    .mutation(async ({ input }) => initiatePasswordReset(input)),
+  findPasswordResetById: p
+    .input(passwordResetIdSchema)
+    .output(passwordResetSchema)
+    .query(async ({ input }) => findPasswordResetById(input)),
+  submitPasswordReset: p
+    .input(passwordResetIdSchema.extend({ password: passwordSchema }))
+    .output(z.void())
+    .mutation(async ({ input }) => submitPasswordReset(input)),
 })

@@ -2,7 +2,7 @@
 import UpdateNameCard from "@/app/account/UpdateNameCard"
 import UpdateEmailCard from "@/app/account/UpdateEmailCard"
 import UpdatePasswordCard from "@/app/account/UpdatePasswordCard"
-import Update2FACard from "./Update2FACard"
+import Update2FACard from "@/app/account/Update2FACard"
 import { User } from "@/lib/db/schemas/users"
 
 export const UserSettings = ({ user }: { user: User | null }) => (<>

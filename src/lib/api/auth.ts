@@ -1,6 +1,6 @@
 import { Session } from "@/lib/db/schemas/sessions"
 import { SignInParams, SignUpParams, User } from "@/lib/db/schemas/users"
-import { createUser, findUserByUsername, updateUser } from "@/lib/api/users"
+import { createUser, findUserByUsername, updateUser, updateUserPassword } from "@/lib/api/users"
 import { headers, cookies } from "next/headers"
 import { TRPCError } from "@trpc/server"
 import * as p from "postgres"
@@ -12,6 +12,8 @@ import { KnownKeysOnly } from "drizzle-orm"
 import { FindSessionParams, createSession, deleteSession, findSessionById, replaceSession } from "@/lib/api/sessions"
 import { createEmailVerification, deleteEmailVerification, deleteEmailVerificationsCreatedById, findEmailVerificationById } from "@/lib/api/email-verifications"
 import { EmailVerificationIdParams } from "@/lib/db/schemas/email-verifications"
+import { createPasswordReset, deletePasswordReset, deletePasswordResetsCreatedById, findPasswordResetById } from "@/lib/api/password-resets"
+import { PasswordResetIdParams } from "@/lib/db/schemas/password-resets"
 import { sendMail } from "@/lib/mail"
 import { verifyTOTP } from "@/lib/api/otp"
 
@@ -91,11 +93,11 @@ export const initiateEmailVerification = async ({ id: createdBy, username, email
   if (email === null) throw new TRPCError({ code: "BAD_REQUEST", message: "User does not have an email address set" })
   await deleteEmailVerificationsCreatedById({ createdBy })
   const emailVerification = await createEmailVerification({ createdBy, email })
-  const verificationUrl = new URL(`/verify/${emailVerification.id}`, env.BASE_URL)
+  const emailVerificationURL = new URL(`/email-verification/${emailVerification.id}`, env.BASE_URL)
   await sendMail({
     to: email,
     subject: "Hanahira Email Verification",
-    html: `Click the link below to confirm the email address for the user <i>${username}</i> at Hanahira:<br><br>${verificationUrl}`,
+    html: `Click the link below to confirm the email address for the user <i>${username}</i> at Hanahira:<br><br>${emailVerificationURL}`,
   })
   return emailVerification
 }
@@ -114,4 +116,31 @@ export const submitEmailVerification = async ({ id }: EmailVerificationIdParams)
   }
   await updateUser({ id: emailVerification.createdBy, emailVerifiedAt: new Date(now) })
   await deleteEmailVerification({ id })
+}
+
+export const initiatePasswordReset = async ({ username }: Pick<User, "username">) => {
+  const { id: createdBy, email, emailVerifiedAt } = await findUserByUsername({ username })
+  if (email === null) throw new TRPCError({ code: "BAD_REQUEST", message: "User does not have an email address set" })
+  if (emailVerifiedAt === null) throw new TRPCError({ code: "BAD_REQUEST", message: "User has not verified their email address" })
+  await deletePasswordResetsCreatedById({ createdBy })
+  const passwordReset = await createPasswordReset({ createdBy })
+  const passwordResetURL = new URL(`/password-reset/${passwordReset.id}`, env.BASE_URL)
+  await sendMail({
+    to: email,
+    subject: "Hanahira Password Reset",
+    html: `Click the link below to reset the password for the user <i>${username}</i> at Hanahira:<br><br>${passwordResetURL}`,
+  })
+  return passwordReset
+}
+
+export const submitPasswordReset = async ({ id, password }: PasswordResetIdParams & { password: string }) => {
+  const passwordReset = await findPasswordResetById({ id, with: { creator: true } })
+  const now = Date.now()
+  const expiresAt = passwordReset.expiresAt.getTime()
+  if (now >= expiresAt) {
+    await deletePasswordReset({ id })
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Password reset has expired" })
+  }
+  await updateUserPassword({ id: passwordReset.createdBy, password })
+  await deletePasswordReset({ id })
 }

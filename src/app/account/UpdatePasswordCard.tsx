@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { z } from "zod"
-import { nullToUndef } from "@/lib/utils"
 
 export const UpdatePasswordCard = () => {
   const router = useRouter()
@@ -17,7 +16,7 @@ export const UpdatePasswordCard = () => {
   const schema = z.object({
     password: passwordSchema,
     confirmPassword: passwordSchema,
-  }).required()
+  })
   const maxPasswordLength = passwordSchema.maxLength
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -38,17 +37,17 @@ export const UpdatePasswordCard = () => {
   return (
     <AccountCard header="Password" description="Please enter the password you want to use to sign in to your account.">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(x => {
-          if (x.password !== x.confirmPassword) return form.setError("confirmPassword", { message: "Passwords do not match" })
+        <form onSubmit={form.handleSubmit(({ password, confirmPassword }) => {
+          if (password !== confirmPassword) return form.setError("confirmPassword", { message: "Passwords do not match" })
           form.setValue("password", "")
           form.setValue("confirmPassword", "")
-          mutate(x)
+          mutate({ password })
         })}>
           <AccountCardBody>
             <FormField control={form.control} name="password" render={({ field: { value, ...props } }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...props} value={nullToUndef(value)} placeholder="Password" type="password" />
+                  <Input {...props} placeholder="Password" type="password" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -58,7 +57,7 @@ export const UpdatePasswordCard = () => {
             <FormField control={form.control} name="confirmPassword" render={({ field: { value, ...props } }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...props} value={nullToUndef(value)} placeholder="Confirm password" type="password" />
+                  <Input {...props} placeholder="Confirm Password" type="password" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -1,16 +1,14 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { pgTable, text } from "drizzle-orm/pg-core"
 import { metaColumns } from "@/lib/db/tables/users"
-import { nanoidSecure } from "@/lib/db/tables/nanoid"
-import { sqlNowPlusSeconds } from "@/lib/db/utils"
+import { idColumnSecure, expiresAtColumn } from "@/lib/db/tables/utils"
 
 export const emailVerificationExpiresInSeconds = 3 * 60 * 60
 export const emailVerificationExpiresInMillis = emailVerificationExpiresInSeconds * 1000
 
 export const emailVerifications = pgTable("email_verification", {
-  id: text("id").primaryKey().$defaultFn(nanoidSecure),
+  ...idColumnSecure,
   email: text("email").notNull(),
-  expiresAt: timestamp("expires_at", { mode: "date" }).notNull()
-    .default(sqlNowPlusSeconds(emailVerificationExpiresInSeconds)),
+  ...expiresAtColumn(emailVerificationExpiresInSeconds),
   ...metaColumns,
 })
 export type EmailVerificationsTable = typeof emailVerifications

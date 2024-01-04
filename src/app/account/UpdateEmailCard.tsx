@@ -43,7 +43,7 @@ export const UpdateEmailCard = ({ email, emailVerifiedAt }: { email: string, ema
             <FormField control={form.control} name="email" render={({ field: { value, ...props } }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...props} type="email" value={nullToUndef(value)} placeholder="Your email" />
+                  <Input {...props} type="email" value={nullToUndef(value)} placeholder="Email Address" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -38,7 +38,7 @@ export const UpdateNameCard = ({ name }: { name: string }) => {
             <FormField control={form.control} name="name" render={({ field: { value, ...props } }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...props} value={nullToUndef(value)} placeholder="Your name" />
+                  <Input {...props} value={nullToUndef(value)} placeholder="Display Name" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
