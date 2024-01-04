@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { trpc } from "@/lib/trpc/client"
 import { z } from "zod"
+import Link from "next/link"
 
 export const AuthForm = ({ isSignUp = false }: {
   children?: ReactNode
@@ -53,15 +54,18 @@ export const AuthForm = ({ isSignUp = false }: {
             <FormMessage />
           </FormItem>
         )}/>
-        {!isSignUp && <FormField control={form.control} name="totp" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Two-Factor Verification Code (if enabled)</FormLabel>
-            <FormControl>
-              <Input {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}/>}
+        {!isSignUp && <>
+          <Link href="/forgot-password" className="text-sm text-sky-500">Forgot Password?</Link>
+          <FormField control={form.control} name="totp" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Two-Factor Verification Code (if enabled)</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}/>
+        </>}
         <Button type="submit" className="w-full" disabled={isSigningIn || isSigningUp}>
           Sign{isSigningIn || isSigningUp ? "ing" : ""} {isSignUp ? "up" : "in"}
         </Button>
