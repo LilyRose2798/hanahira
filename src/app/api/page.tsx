@@ -1,7 +1,8 @@
 import { Metadata } from "next"
 import SwaggerUI from "@/components/swagger/SwaggerUI"
 
-export const metadata: Metadata = { title: "API" }
+const title = "API"
+export const metadata: Metadata = { title }
 
 const ApiDoc = async () => (
   <section className="container">

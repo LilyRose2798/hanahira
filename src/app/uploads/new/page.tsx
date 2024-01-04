@@ -3,7 +3,8 @@ import NewUploadForm from "@/components/uploads/NewUploadForm"
 import { api } from "@/lib/trpc/api"
 import { authErrorRedirect } from "@/lib/trpc/utils"
 
-export const metadata: Metadata = { title: "New Upload" }
+const title = "New Upload"
+export const metadata: Metadata = { title }
 export const dynamic = "force-dynamic"
 
 const NewUpload = async ({ searchParams }: { searchParams?: { ids?: string } }) => {
@@ -13,7 +14,7 @@ const NewUpload = async ({ searchParams }: { searchParams?: { ids?: string } }) 
   const initialUploads = ids.flatMap(id => (upload => (upload ? [upload] : []))(uploadsMap.get(id)))
   return (
     <section className="container">
-      <h1 className="font-semibold text-2xl my-6">New Upload</h1>
+      <h1 className="font-semibold text-2xl my-6">{title}</h1>
       <NewUploadForm initialUploads={initialUploads} />
     </section>
   )

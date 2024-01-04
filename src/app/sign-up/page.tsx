@@ -5,7 +5,8 @@ import { api } from "@/lib/trpc/api"
 import { redirect } from "next/navigation"
 import { Metadata } from "next"
 
-export const metadata: Metadata = { title: "Sign Up" }
+const title = "Sign Up"
+export const metadata: Metadata = { title }
 export const dynamic = "force-dynamic"
 
 const SignUp = async () => {
@@ -13,11 +14,11 @@ const SignUp = async () => {
   if (user) redirect("/")
   return (
     <section className="container max-w-lg mx-auto my-4 bg-secondary p-10">
-      <h1 className="text-2xl font-semibold text-center">Create an account</h1>
+      <h1 className="text-2xl font-semibold text-center">{title}</h1>
       <AuthForm isSignUp />
       <div className="mt-4 text-muted-foreground text-center text-sm">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-secondary-foreground underline">Sign in</Link>
+        <Link href="/sign-in" className="text-secondary-foreground underline">Sign In</Link>
       </div>
     </section>
   )
