@@ -20,6 +20,8 @@ export const UpdateNameCard = ({ name }: { name: string }) => {
     resolver: zodResolver(schema),
     defaultValues: { name },
   })
+  const currentName = form.getValues("name")
+  const nameChanged = currentName !== name
 
   const { mutate, isLoading } = trpc.account.update.useMutation({
     onSuccess: user => {
@@ -46,7 +48,7 @@ export const UpdateNameCard = ({ name }: { name: string }) => {
           </AccountCardBody>
           <AccountCardFooter description={maxNameLength !== null ? `${maxNameLength} characters maximum` : ""}>
             <div>
-              <Button disabled={isLoading}>Update Name</Button>
+              <Button disabled={!nameChanged || isLoading}>Update Name</Button>
               {name && <Button className="ml-4" type="button" onClick={() => {
                 form.setValue("name", "")
                 mutate({ name: null })

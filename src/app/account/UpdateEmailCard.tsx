@@ -20,6 +20,8 @@ export const UpdateEmailCard = ({ email, emailVerifiedAt }: { email: string, ema
     resolver: zodResolver(schema),
     defaultValues: { email },
   })
+  const currentEmail = form.getValues("email")
+  const emailChanged = currentEmail !== email
 
   const { mutateAsync: updateAcount, isLoading: isUpdatingAccount } = trpc.account.update.useMutation({
     onSuccess: user => {
@@ -51,11 +53,11 @@ export const UpdateEmailCard = ({ email, emailVerifiedAt }: { email: string, ema
           </AccountCardBody>
           <AccountCardFooter description={maxEmailLength !== null ? `${maxEmailLength} characters maximum` : ""}>
             <div>
-              {emailVerifiedAt === null ? <Button type="button"
+              {emailVerifiedAt === null || emailChanged ? <Button type="button"
                 onClick={form.handleSubmit(x => updateAcount(x).then(() => initiateEmailVerification()))}
                 disabled={isUpdatingAccount || isInitiatingEmailVerification}>Verify Email</Button> :
                 <span className="text-sm text-green-500 px-2">Email Verified</span>}
-              <Button className="ml-4" disabled={isUpdatingAccount}>Update Email</Button>
+              <Button className="ml-4" disabled={!emailChanged || isUpdatingAccount}>Update Email</Button>
               {email && <Button className="ml-4" type="button" onClick={() => {
                 form.setValue("email", "")
                 updateAcount({ email: null })
