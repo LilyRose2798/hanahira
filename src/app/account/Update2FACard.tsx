@@ -53,7 +53,7 @@ export const Update2FACard = ({ otpSecret, otpEnabled, username }: { otpSecret: 
               </FormItem>
             )}/>
           </AccountCardBody>
-          <AccountCardFooter description="">
+          <AccountCardFooter description="6 digit numerical code required">
             {otpEnabled ? <Button variant="destructive" disabled={isDisabling2FA}>Disable 2FA</Button> :
               <Button disabled={isEnabling2FA}>Enable 2FA</Button>}
           </AccountCardFooter>

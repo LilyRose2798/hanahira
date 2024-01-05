@@ -15,7 +15,7 @@ const Account = async () => {
   return (
     <section className="container">
       <h1 className="text-2xl font-semibold my-6">{title}</h1>
-      <div className="space-y-6">
+      <div className="my-6 space-y-6">
         <UserSettings user={{ ...user, otpSecret, otpEnabled: !!user.otpSecret }} />
       </div>
     </section>
