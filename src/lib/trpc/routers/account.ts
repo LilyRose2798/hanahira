@@ -1,6 +1,6 @@
 import { router as r, procedure as p } from "@/lib/trpc"
 import { hasAuth, hasAuthWithUser } from "@/lib/trpc/middleware"
-import { replaceUserSchema, updateUserSchema, userSchema, passwordSchema } from "@/lib/db/schemas/users"
+import { replaceUserSchema, updateUserSchema, userSchema, passwordSchema, totpSchema } from "@/lib/db/schemas/users"
 import { replaceUser, updateUser, deleteUser, queryUserById, updateUserPassword, enableUser2FA, disableUser2FA } from "@/lib/api/users"
 import { z } from "zod"
 import { partialUploadSchema, uploadIdSchema } from "@/lib/db/schemas/uploads"
@@ -132,14 +132,14 @@ export const accountRouter = r({
     .use(hasAuth)
     .input(z.object({
       otpSecret: userSchema.shape.otpSecret.unwrap(),
-      totp: z.string(),
+      totp: totpSchema,
     }))
     .output(userSchema)
     .mutation(async ({ ctx: { session: { createdBy: id } }, input }) => enableUser2FA({ id, ...input })),
   disable2FA: p
     .use(hasAuthWithUser)
     .input(z.object({
-      totp: z.string(),
+      totp: totpSchema,
     }))
     .output(userSchema)
     .mutation(async ({ ctx: { session: { creator: { id, otpSecret } } }, input }) => disableUser2FA({ id, otpSecret, ...input })),

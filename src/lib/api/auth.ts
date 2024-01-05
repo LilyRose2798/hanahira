@@ -116,6 +116,11 @@ export const submitEmailVerification = async ({ id }: EmailVerificationIdParams)
   }
   await updateUser({ id: emailVerification.createdBy, emailVerifiedAt: new Date(now) })
   await deleteEmailVerification({ id })
+  await sendMail({
+    to: emailVerification.creator.email,
+    subject: "Hanahira Email Verification Successful",
+    html: `Email address successfully verified for the user <i>${emailVerification.creator.username}</i> at Hanahira.`,
+  })
 }
 
 export const initiatePasswordReset = async ({ username }: Pick<User, "username">) => {
@@ -135,6 +140,8 @@ export const initiatePasswordReset = async ({ username }: Pick<User, "username">
 
 export const submitPasswordReset = async ({ id, password }: PasswordResetIdParams & { password: string }) => {
   const passwordReset = await findPasswordResetById({ id, with: { creator: true } })
+  if (passwordReset.creator.email === null) throw new TRPCError({ code: "BAD_REQUEST", message: "User does not have an email address set" })
+  if (passwordReset.creator.emailVerifiedAt === null) throw new TRPCError({ code: "BAD_REQUEST", message: "User has not verified their email address" })
   const now = Date.now()
   const expiresAt = passwordReset.expiresAt.getTime()
   if (now >= expiresAt) {
@@ -143,4 +150,9 @@ export const submitPasswordReset = async ({ id, password }: PasswordResetIdParam
   }
   await updateUserPassword({ id: passwordReset.createdBy, password })
   await deletePasswordReset({ id })
+  await sendMail({
+    to: passwordReset.creator.email,
+    subject: "Hanahira Password Reset Successful",
+    html: `Password successfully reset for the user <i>${passwordReset.creator.username}</i> at Hanahira.`,
+  })
 }

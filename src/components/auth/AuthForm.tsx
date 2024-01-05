@@ -1,6 +1,5 @@
 "use client"
 import { useRouter } from "next/navigation"
-import { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -12,10 +11,7 @@ import { trpc } from "@/lib/trpc/client"
 import { z } from "zod"
 import Link from "next/link"
 
-export const AuthForm = ({ isSignUp = false }: {
-  children?: ReactNode
-  isSignUp?: boolean
-}) => {
+export const AuthForm = ({ isSignUp = false }: { isSignUp?: boolean }) => {
   const router = useRouter()
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),

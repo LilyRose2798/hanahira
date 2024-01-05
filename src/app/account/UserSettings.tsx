@@ -5,11 +5,12 @@ import UpdatePasswordCard from "@/app/account/UpdatePasswordCard"
 import Update2FACard from "@/app/account/Update2FACard"
 import { User } from "@/lib/db/schemas/users"
 
-export const UserSettings = ({ user }: { user: User | null }) => (<>
-  <UpdateNameCard name={user?.name ?? ""} />
-  <UpdateEmailCard email={user?.email ?? ""} emailVerifiedAt={user?.emailVerifiedAt ?? null} />
+export const UserSettings = ({ user: { name, username, email, emailVerifiedAt, otpSecret, otpEnabled } }:
+  { user: User & { otpSecret: string, otpEnabled: boolean } }) => (<>
+  <UpdateNameCard name={name ?? ""} />
+  <UpdateEmailCard email={email ?? ""} emailVerifiedAt={emailVerifiedAt} />
   <UpdatePasswordCard />
-  <Update2FACard otpSecret={user?.otpSecret} />
+  <Update2FACard otpSecret={otpSecret} otpEnabled={otpEnabled} username={username} />
 </>)
 
 export default UserSettings
