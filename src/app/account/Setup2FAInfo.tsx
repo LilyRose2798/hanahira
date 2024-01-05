@@ -4,7 +4,11 @@ import { toDataURL } from "qrcode"
 import { useEffect, useState } from "react"
 
 export const Setup2FAInfo = ({ otpSecret, username }: { otpSecret: string, username: string }) => {
-  const otpURL = generateOTPURL(otpSecret, { label: "Hanahira", user: `${username}@hanahira.moe`, issuer: "Hanahira" })
+  const otpURL = generateOTPURL(otpSecret, {
+    label: "Hanahira",
+    user: `${username}@hanahira.moe`,
+    issuer: "Hanahira",
+  })
   const [otpDataURL, setOTPDataURL] = useState<string>()
   useEffect(() => {
     toDataURL(otpURL).then(setOTPDataURL)
@@ -12,7 +16,8 @@ export const Setup2FAInfo = ({ otpSecret, username }: { otpSecret: string, usern
   }, [otpURL])
 
   return <div>
-    {otpDataURL ? <img title={otpURL} alt="The QR code to set up 2FA" src={otpDataURL} /> : <p>Loading QR Code...</p>}
+    {!otpDataURL ? <p>Loading QR Code...</p> :
+      <img title={otpURL} alt="The QR code to set up 2FA" src={otpDataURL} />}
     <p className="my-4" >{otpSecret}</p>
     <p className="my-4" >{otpURL}</p>
   </div>
