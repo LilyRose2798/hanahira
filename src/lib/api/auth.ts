@@ -24,6 +24,7 @@ const setSessionCookie = (sessionId: Session["id"] | null) => cookies().set({
   value: sessionId ?? "",
   maxAge: sessionId === null ? 0 : sessionExpiresInSeconds,
   secure: env.NODE_ENV === "production",
+  httpOnly: true,
   sameSite: "lax",
   path: "/",
 })

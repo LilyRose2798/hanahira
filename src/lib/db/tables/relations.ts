@@ -7,7 +7,7 @@ import { uploads } from "@/lib/db/tables/uploads"
 import { tagAliases, tagImplications, tagTypes, tags } from "@/lib/db/tables/tags"
 import { postCommentVotes, postComments, postFavourites, postParents, postVotes, postTags, posts } from "@/lib/db/tables/posts"
 import { poolPosts, pools } from "@/lib/db/tables/pools"
-import { artistAliases, artistLinks, artists } from "@/lib/db/tables/artists"
+import { artistAliases, artistGroups, artistLinks, artists, artistTags, groups } from "@/lib/db/tables/artists"
 import { TableWithColumns } from "@/lib/db/tables/utils"
 
 export const userRelations = relations(users, ({ many }) => ({
@@ -141,7 +141,14 @@ export const tagRelations = relations(tags, ({ one, many }) => ({
   impliesTags: many(tagImplications, { relationName: "tag" }),
   impliedByTags: many(tagImplications, { relationName: "impliesTag" }),
   posts: many(postTags),
+  artistTag: one(artistTags),
   ...userMetaRelations(tags)({ one }),
+}))
+
+export const artistTagRelations = relations(artistTags, ({ one }) => ({
+  artist: one(artists, { fields: [artistTags.artistId], references: [artists.id] }),
+  tag: one(tags, { fields: [artistTags.tagId], references: [tags.id] }),
+  ...userMetaRelations(artistTags)({ one }),
 }))
 
 export const artistAliasesRelations = relations(artistAliases, ({ one }) => ({
@@ -157,5 +164,18 @@ export const artistLinksRelations = relations(artistLinks, ({ one }) => ({
 export const artistRelations = relations(artists, ({ one, many }) => ({
   aliases: many(artistAliases),
   links: many(artistLinks),
+  groups: many(artistGroups),
+  tag: one(artistTags),
   ...userMetaRelations(artists)({ one }),
+}))
+
+export const artistGroupRelations = relations(artistGroups, ({ one }) => ({
+  artist: one(artists, { fields: [artistGroups.artistId], references: [artists.id] }),
+  group: one(groups, { fields: [artistGroups.groupId], references: [groups.id] }),
+  ...userMetaRelations(artistGroups)({ one }),
+}))
+
+export const groupRelations = relations(groups, ({ one, many }) => ({
+  artistGroups: many(artistGroups),
+  ...userMetaRelations(groups)({ one }),
 }))

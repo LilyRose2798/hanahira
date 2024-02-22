@@ -4,7 +4,7 @@ import { metaColumns } from "@/lib/db/tables/users"
 
 export const tagTypes = pgTable("tag_type", {
   ...idColumn,
-  name: text("name").notNull(),
+  name: text("name").notNull().unique(),
   description: text("description"),
   ...metaColumns,
 })
@@ -12,7 +12,7 @@ export type TagTypesTable = typeof tagTypes
 
 export const tags = pgTable("tag", {
   ...idColumn,
-  name: text("name").notNull(),
+  name: text("name").notNull().unique(),
   description: text("description"),
   typeId: text("type_id").notNull().references(() => tagTypes.id),
   ...metaColumns,

@@ -7,8 +7,8 @@ import { uploads } from "@/lib/db/tables/uploads"
 import { tags, tagTypes, tagAliases, tagImplications } from "@/lib/db/tables/tags"
 import { posts, postParents, postTags, postVotes, postFavourites, postComments, postCommentVotes } from "@/lib/db/tables/posts"
 import { pools, poolPosts } from "@/lib/db/tables/pools"
-import { artists, artistAliases, artistLinks } from "@/lib/db/tables/artists"
-import { userRelations, sessionUserRelations, emailVerificationUserRelations, passwordResetUserRelations, uploadRelations, tagTypeRelations, tagAliasRelations, tagImplicationRelations, tagRelations, postParentRelations, postTagRelations, postVoteRelations, postFavouriteRelations, postCommentRelations, postCommentVoteRelations, postRelations, poolPostRelations, poolRelations, artistAliasesRelations, artistLinksRelations, artistRelations } from "@/lib/db/tables/relations"
+import { artists, artistAliases, artistLinks, artistTags, artistGroups, groups } from "@/lib/db/tables/artists"
+import { userRelations, sessionUserRelations, emailVerificationUserRelations, passwordResetUserRelations, uploadRelations, tagTypeRelations, tagAliasRelations, tagImplicationRelations, tagRelations, postParentRelations, postTagRelations, postVoteRelations, postFavouriteRelations, postCommentRelations, postCommentVoteRelations, postRelations, poolPostRelations, poolRelations, artistTagRelations, artistAliasesRelations, artistLinksRelations, artistRelations, artistGroupRelations, groupRelations } from "@/lib/db/tables/relations"
 
 export {
   userRoleEnum,
@@ -51,9 +51,15 @@ export {
   poolPostRelations,
   poolRelations,
   artists,
+  artistTags,
   artistAliases,
   artistLinks,
+  artistGroups,
+  groups,
+  artistTagRelations,
   artistAliasesRelations,
   artistLinksRelations,
   artistRelations,
+  artistGroupRelations,
+  groupRelations,
 }
