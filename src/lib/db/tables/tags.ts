@@ -6,6 +6,7 @@ export const tagTypes = pgTable("tag_type", {
   ...idColumn,
   name: text("name").notNull().unique(),
   description: text("description"),
+  colorCode: text("color_code"),
   ...metaColumns,
 })
 export type TagTypesTable = typeof tagTypes
