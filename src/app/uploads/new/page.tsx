@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic"
 
 const NewUpload = async ({ searchParams }: { searchParams?: { ids?: string } }) => {
   const ids = searchParams?.ids?.split(",") ?? []
-  const uploads = await api.account.find.uploadsByIds.query({ ids }).catch(authErrorRedirect)
-  const uploadsMap = new Map(uploads.map(upload => [upload.id, upload]))
+  const uploads = await api.account.find.uploadsByIdsWithPosts.query({ ids }).catch(authErrorRedirect)
+  const uploadsMap = new Map(uploads.map(({ post, ...upload }) => [upload.id, post === null ? upload : { post, ...upload }]))
   const initialUploads = ids.flatMap(id => (upload => (upload ? [upload] : []))(uploadsMap.get(id)))
   return (
     <section className="container">

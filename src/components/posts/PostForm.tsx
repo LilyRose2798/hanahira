@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { trpc } from "@/lib/trpc/client"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -12,11 +13,12 @@ import { z } from "zod"
 import { postRatingName, postRatings } from "@/lib/db/enums/post-rating"
 import { Upload } from "@/lib/db/schemas/uploads"
 import { Ref } from "react"
-import UploadComp from "@/components/uploads/Upload"
+import ReplaceUploadForm from "@/components/uploads/ReplaceUploadForm"
 import Link from "next/link"
 
-export const PostForm = ({ upload, post, uploadDeleted, setPost, submitRef, deleteUploadRef, deletePostRef }: {
-  upload: Upload, post?: Post, setPost?: (post: Post | undefined) => void, uploadDeleted?: (upload: Upload) => void,
+export const PostForm = ({ upload, post, uploadDeleted, uploadReplaced, setPost, submitRef, deleteUploadRef, deletePostRef }: {
+  upload: Upload, post?: Post, setPost?: (post: Post | undefined) => void,
+  uploadDeleted?: (upload: Upload) => void, uploadReplaced?: (upload: Upload) => void,
   submitRef?: Ref<HTMLButtonElement>, deleteUploadRef?: Ref<HTMLButtonElement>, deletePostRef?: Ref<HTMLButtonElement>,
 }) => {
   const editing = !!post?.id
@@ -61,21 +63,21 @@ export const PostForm = ({ upload, post, uploadDeleted, setPost, submitRef, dele
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(p => (editing ? updatePost({ ...p, id: post.id }) : createPost({ ...p, uploadId: upload.id })))} className={"space-y-8"}>
-        <UploadComp upload={upload} />
-        <FormField control={form.control} name="description" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Description</FormLabel>
-            <FormControl>
-              <Input {...field} value={field.value ?? undefined} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}/>
+        <ReplaceUploadForm upload={upload} uploadReplaced={uploadReplaced} />
         <FormField control={form.control} name="sourceUrl" render={({ field }) => (
           <FormItem>
             <FormLabel>Source Url</FormLabel>
             <FormControl>
-              <Input {...field} value={field.value ?? undefined} />
+              <Input placeholder="e.g. https://www.pixiv.net/en/artworks/98552071" {...field} value={field.value ?? undefined} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}/>
+        <FormField control={form.control} name="description" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea placeholder="Type a description for this post here" {...field} value={field.value ?? undefined} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -109,7 +111,7 @@ export const PostForm = ({ upload, post, uploadDeleted, setPost, submitRef, dele
             Delet{isDeletingPost ? "ing Post..." : "e Post"}
           </Button> :
           <Button ref={deleteUploadRef} className="my-4" type="button" variant="destructive" onClick={() => deleteUpload({ id: upload.id })} disabled={isDeletingUpload}>
-          Delet{isDeletingUpload ? "ing Upload..." : "e Upload"}
+            Delet{isDeletingUpload ? "ing Upload..." : "e Upload"}
           </Button>}
       </form>
     </Form>

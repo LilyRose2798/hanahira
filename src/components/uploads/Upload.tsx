@@ -4,7 +4,7 @@ import Link from "next/link"
 
 const Upload = ({ upload }: { upload: Upload }) => (
   <div className="w-full">
-    <h2 className="text-l font-semibold">{upload.originalName}</h2>
+    {/* <h2 className="text-l font-semibold">{upload.originalName}</h2> */}
     {upload.detectedMime?.startsWith("image/") ?
       <Image className="my-4" alt="" src={upload.location} width={300} height={300} /> :
       upload.detectedMime?.startsWith("video/") ?

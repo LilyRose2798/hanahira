@@ -18,6 +18,9 @@ export const accountRouter = r({
     uploads: p.use(hasAuth).query(async ({ ctx: { session: { createdBy } } }) => findUploadsCreatedBy({ createdBy })),
     uploadsByIds: p.use(hasAuth).input(z.object({ ids: uploadIdSchema.shape.id.array() }))
       .query(async ({ input, ctx: { session: { createdBy } } }) => findUploadsByIdsCreatedBy({ ...input, createdBy })),
+    uploadsByIdsWithPosts: p.use(hasAuth).input(z.object({ ids: uploadIdSchema.shape.id.array() }))
+      .query(async ({ input, ctx: { session: { createdBy } } }) => (
+        findUploadsByIdsCreatedBy({ ...input, createdBy, with: { post: true } }))),
     posts: p.use(hasAuth).query(async ({ ctx: { session: { createdBy } } }) => findPostsCreatedBy({ createdBy })),
   }),
   query: r({

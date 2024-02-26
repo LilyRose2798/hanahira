@@ -59,7 +59,7 @@ export const emailVerificationUserRelations = relations(emailVerifications, user
 export const passwordResetUserRelations = relations(passwordResets, userMetaRelations(passwordResets))
 
 export const uploadRelations = relations(uploads, ({ one, many }) => ({
-  posts: many(posts),
+  post: one(posts),
   ...userMetaRelations(uploads)({ one }),
 }))
 

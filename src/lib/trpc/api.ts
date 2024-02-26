@@ -33,7 +33,7 @@ export const api = createTRPCProxyClient<AppRouter>({
         observer.complete()
       }).catch(err => {
         if (err instanceof TRPCError) {
-          const { message, code, stack, cause } = err
+          const { message, code, /* stack, */cause } = err
           observer.error(new TRPCClientError<AppRouter>(message, {
             result: {
               error: {
@@ -42,7 +42,7 @@ export const api = createTRPCProxyClient<AppRouter>({
                 data: {
                   code,
                   httpStatus: getHTTPStatusCodeFromError(err),
-                  stack,
+                  /* stack, */
                   path,
                   zodError: null,
                 },
