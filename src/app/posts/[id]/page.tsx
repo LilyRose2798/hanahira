@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import PostComp from "@/components/posts/Post"
+import PostDetails from "@/components/posts/PostDetails"
 import { api } from "@/lib/trpc/api"
 
 const title = "Post"
@@ -10,7 +10,7 @@ const Post = async ({ params: { id } }: { params: { id: string } }) => {
   return (
     <section className="container">
       <h1 className="font-semibold text-2xl my-6">{title}</h1>
-      <PostComp post={post} />
+      <PostDetails post={post} />
     </section>
   )
 }

@@ -9,10 +9,10 @@ import { TableWithColumns } from "@/lib/db/tables/utils"
 
 extendZodWithOpenApi(z)
 
-export const maxFileSize = 1 * 1024 * 1024
+export const maxFileSize = 128 * 1024 * 1024
 export const humanMaxFileSize = humanFileSize(maxFileSize)
 export const maxFileCount = 50
-export const maxTotalFileSize = 4 * 1024 * 1024
+export const maxTotalFileSize = 1024 * 1024 * 1024
 export const humanMaxTotalFileSize = humanFileSize(maxTotalFileSize)
 export const fileSchema = z
   .custom<File>(x => x instanceof File, "Invalid file provided")

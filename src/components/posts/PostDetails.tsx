@@ -1,11 +1,11 @@
 import { postRatingName } from "@/lib/db/enums/post-rating"
 import { postStatusName } from "@/lib/db/enums/post-status"
 import { PostWithUpload } from "@/lib/db/schemas/posts"
-import Upload from "@/components/uploads/Upload"
+import UploadPreview from "@/components/uploads/UploadPreview"
 
-const Post = ({ post }: { post: PostWithUpload }) => (
+const PostDetails = ({ post }: { post: PostWithUpload }) => (
   <div className="w-full">
-    <Upload upload={post.upload} />
+    <UploadPreview upload={post.upload} className="w-fit h-[50vh] rounded-md my-4" />
     <p>Description: {post.description ?? "(No description set)"}</p>
     <p>Source URL: {post.sourceUrl ?? "(No source URL set)"}</p>
     <p>Rating: {postRatingName(post.rating)}</p>
@@ -14,4 +14,4 @@ const Post = ({ post }: { post: PostWithUpload }) => (
   </div>
 )
 
-export default Post
+export default PostDetails

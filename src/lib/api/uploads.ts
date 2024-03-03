@@ -105,7 +105,7 @@ export const saveFile = async (file: File) => {
   const decoder = detectedExtension && decoders[detectedExtension]
   const decodedData = await decoder?.(buffer)
   const { width, height } = decodedData ?? {}
-  const blockHash = decodedData && bmvbhash(decodedData, 16)
+  const blockHash = decodedData && bmvbhash(decodedData, 12)
   await writeFile(join(cwd(), "public", location), buffer)
   return {
     location,

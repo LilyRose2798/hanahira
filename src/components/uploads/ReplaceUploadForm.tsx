@@ -9,7 +9,7 @@ import { truncate } from "@/lib/utils"
 import { APIErrorResponse } from "@/lib/api/utils"
 import { Button } from "@/components/ui/button"
 import { ReplaceIcon } from "lucide-react"
-import UploadComp from "@/components/uploads/Upload"
+import UploadPreview from "@/components/uploads/UploadPreview"
 
 export const ReplaceUploadForm = ({ upload, uploadReplaced }: {
   upload: Upload, uploadReplaced?: (upload: Upload) => void }) => {
@@ -62,11 +62,11 @@ export const ReplaceUploadForm = ({ upload, uploadReplaced }: {
 
   return (
     <div {...getRootProps({ className: `w-fit relative border border-input border-solid rounded-md text-sm p-6 ${isLoading ? "" : "cursor-pointer"}` }) }>
-      <UploadComp upload={upload} />
-      <input {...getInputProps({ disabled: isLoading })} />
-      <Button type="button">
-        <ReplaceIcon className="h-4 mr-2" />Replace Image
+      <UploadPreview upload={upload} className="w-full h-60 rounded-md" />
+      <Button type="button" className="mt-4">
+        <ReplaceIcon className="h-4 mr-2" />Replace Upload
       </Button>
+      <input {...getInputProps({ disabled: isLoading })} />
       {isLoading && <progress max={1} value={uploadProgress} className="absolute inset-0 w-full h-full m-0 p-0 -z-50 [&::-webkit-progress-bar]:rounded-md [&::-webkit-progress-value]:rounded-md [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-input"></progress>}
       {(isDragActive || isLoading) && <div className="absolute inset-0 w-full h-full rounded-md bg-black/85 text-white">
         <div className="flex justify-center items-center w-full h-full rounded-md"><p>{isLoading ? (uploadProgress === 1 ?

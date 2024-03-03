@@ -43,3 +43,16 @@ export type EnhancedOmit<TRecordOrUnion, KeyUnion> = string extends keyof TRecor
   : TRecordOrUnion extends any
   ? Pick<TRecordOrUnion, Exclude<keyof TRecordOrUnion, KeyUnion>>
   : never
+
+export type PageSearchParams = { [key: string]: string | string[] | undefined }
+
+export const pageToURLSearchParams = (pageSearchParams?: PageSearchParams) => {
+  const searchParams = new URLSearchParams()
+  if (pageSearchParams === undefined) return searchParams
+  for (const [k, v] of Object.entries(pageSearchParams)) {
+    if (v === undefined) continue
+    if (typeof v === "string") searchParams.set(k, v)
+    else if (Array.isArray(v)) for (const w of v) searchParams.append(k, w)
+  }
+  return searchParams
+}
