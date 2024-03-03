@@ -1,6 +1,6 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { Upload } from "@/lib/db/schemas/uploads"
+import { Upload, UploadWithPost } from "@/lib/db/schemas/uploads"
 import { useRef, useState, RefObject } from "react"
 import { Post } from "@/lib/db/schemas/posts"
 import UploadForm from "@/components/uploads/UploadForm"
@@ -11,8 +11,6 @@ type UploadRefMap = Map<Upload["id"], {
   deleteUpload: RefObject<HTMLButtonElement>,
   deletePost: RefObject<HTMLButtonElement>,
 }>
-
-type UploadWithPost = Upload & { post?: Post }
 
 const PostFormListItem = ({ upload: { post: initialPost, ...upload }, uploadRefMap, uploadDeleted, uploadReplaced }: {
   upload: UploadWithPost, uploadRefMap: UploadRefMap,

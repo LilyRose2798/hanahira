@@ -2,6 +2,7 @@ import { z } from "zod"
 import { extendZodWithOpenApi } from "zod-openapi"
 import { maxFileSize, tableSchemas } from "@/lib/db/schemas/utils"
 import { UploadsTable } from "@/lib/db/tables/uploads"
+import { Post } from "@/lib/db/schemas/posts"
 
 extendZodWithOpenApi(z)
 
@@ -35,6 +36,7 @@ export const {
 }, {})
 
 export type Upload = z.infer<typeof uploadSchema>
+export type UploadWithPost = Upload & { post?: Post }
 export type PartialUpload = z.infer<typeof partialUploadSchema>
 export type UploadIdParams = z.infer<typeof uploadIdSchema>
 export type QueryUploadIdParams = z.infer<typeof queryUploadIdSchema>
